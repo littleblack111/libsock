@@ -1,0 +1,51 @@
+---
+Language: Cpp
+BasedOnStyle: LLVM
+
+PointerAlignment: Right
+RemoveBracesLLVM: true
+AlignAfterOpenBracket: BlockIndent
+AlignEscapedNewlines: Right
+AlignTrailingComments: true
+AllowAllParametersOfDeclarationOnNextLine: true
+AlignConsecutiveAssignments: true
+AlignConsecutiveBitFields: true
+AlignConsecutiveDeclarations: true
+AlignConsecutiveMacros: true
+# AlignConsecutiveShortCaseStatements: # need clang-format 17(not avaliable yet)
+  # Enabled: true
+# AlignConsecutiveTableGenBreakingDAGArgColons: true # need clang-format 19(not avaliable yet)
+# AlignConsecutiveTableGenCondOperatorColons: true # need clang-format 19(not avaliable yet)
+# AlignConsecutiveTableGenDefinitionColons: true # need clang-format 19(not avaliable yet)
+BinPackParameters: false
+Standard: Auto
+UseTab: Always
+IndentWidth: 4
+TabWidth: 4
+ColumnLimit: 0
+# AccessModifierOffset: -4
+BreakConstructorInitializers: BeforeComma
+ConstructorInitializerAllOnOneLineOrOnePerLine: true
+PackConstructorInitializers: Never
+
+BraceWrapping: {
+  AfterCaseLabel: false,
+  AfterClass: false,
+  AfterControlStatement: Never,
+  AfterEnum: false,
+  AfterFunction: false,
+  AfterNamespace: false,
+  AfterObjCDeclaration: false,
+  AfterStruct: false,
+  AfterUnion: false,
+  AfterExternBlock: false,
+  BeforeCatch: false,
+  BeforeElse: false,
+  BeforeLambdaBody: false,
+  BeforeWhile: false,
+  IndentBraces: false,
+  SplitEmptyFunction: true,
+  SplitEmptyRecord: true,
+}
+BreakBeforeBraces: Custom
+# InsertBraces: false
