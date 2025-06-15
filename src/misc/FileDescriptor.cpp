@@ -5,6 +5,8 @@
 #include <unistd.h>
 #include <utility>
 
+using namespace LibSock;
+
 CFileDescriptor::CFileDescriptor(int const fd)
 	: m_fd(fd) {}
 

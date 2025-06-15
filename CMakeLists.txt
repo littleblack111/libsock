@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.19)
 
 project(
-  libsock
+  sock
   VERSION 1.0.0
   DESCRIPTION "Minimal C++ socket library")
 
@@ -36,17 +36,23 @@ else()
   message(STATUS "Configuring libsock in Release")
 endif()
 
-file(GLOB_RECURSE SRCFILES CONFIGURE_DEPENDS "src/*.cpp" "include/*.hpp")
+# Separate source files and headers
+file(GLOB_RECURSE PRIVATE_SOURCES CONFIGURE_DEPENDS "src/*.cpp")
+file(GLOB_RECURSE PRIVATE_HEADERS CONFIGURE_DEPENDS "src/*.hpp")
 file(GLOB_RECURSE PUBLIC_HEADERS CONFIGURE_DEPENDS "include/*.hpp")
+
+# Create list of all source files (private sources + public headers)
+set(ALL_SOURCES ${PRIVATE_SOURCES} ${PUBLIC_HEADERS})
 
 find_package(PkgConfig REQUIRED)
 
-add_library(libsock SHARED ${SRCFILES})
+add_library(sock SHARED ${ALL_SOURCES})
 target_include_directories(
-  libsock
+  sock
   PUBLIC "./include"
-  PRIVATE "./src")
-set_target_properties(libsock PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION 1)
+  PRIVATE "./src"
+  PRIVATE "./src/misc")  # Add this so FileDescriptor.hpp can be found
+set_target_properties(sock PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION 1)
 
 # tests add_custom_target(tests)
 #
@@ -61,7 +67,9 @@ set_target_properties(libsock PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION 1)
 # libsock_connection "connection") add_dependencies(tests libsock_connection)
 #
 # Installation
-install(TARGETS libsock)
-install(DIRECTORY "include/libsock" DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(TARGETS sock)
+install(DIRECTORY "include/libsock" 
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+        PATTERN "misc" EXCLUDE)
 install(FILES ${CMAKE_BINARY_DIR}/libsock.pc
         DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)

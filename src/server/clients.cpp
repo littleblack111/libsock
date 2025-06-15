@@ -99,6 +99,10 @@ std::vector<SP<Client>> Clients::getClients() const {
 	return m_vClients | std::views::transform([](const auto &s) { return s.second; }) | std::ranges::to<std::vector>();
 }
 
+std::vector<SData> Clients::getDatas() const {
+	return m_vDatas;
+}
+
 void Clients::kick(WP<Client> clientWeak, const bool kill, const std::string &reason) {
 	auto client = clientWeak.lock();
 	if (!client)

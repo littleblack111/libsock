@@ -1,6 +1,9 @@
 #pragma once
 
 #include <fcntl.h>
+
+namespace LibSock {
+
 class CFileDescriptor {
   public:
 	CFileDescriptor() = default;
@@ -33,3 +36,5 @@ class CFileDescriptor {
   private:
 	int m_fd = -1;
 };
+
+} // namespace LibSock

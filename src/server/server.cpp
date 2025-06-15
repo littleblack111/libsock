@@ -1,5 +1,6 @@
 #include "libsock/server/server.hpp"
-#include "misc/memory.hpp"
+#include "libsock/types.hpp"
+#include "misc/FileDescriptor.hpp"
 #include <cstring>
 #include <mutex>
 #include <sys/socket.h>
@@ -8,7 +9,7 @@ using namespace LibSock::Server;
 
 Server::Server(uint16_t port, bool reuseaddr, bool keepalive)
 	: m_sockfd(
-		  std::make_shared<CFileDescriptor>(socket(AF_INET, SOCK_STREAM, 0))) {
+		  std::make_shared<LibSock::CFileDescriptor>(socket(AF_INET, SOCK_STREAM, 0))) {
 	std::lock_guard<std::mutex> lk(m_mutex);
 	if (!m_sockfd->isValid() || m_sockfd->get() < 0)
 		throw std::runtime_error("Failed to create socket");
@@ -35,4 +36,4 @@ Server::Server(uint16_t port, bool reuseaddr, bool keepalive)
 
 Server::~Server() { m_sockfd.reset(); }
 
-std::shared_ptr<CFileDescriptor> Server::getSocket() const { return m_sockfd; }
+std::shared_ptr<LibSock::CFileDescriptor> Server::getSocket() const { return m_sockfd; }

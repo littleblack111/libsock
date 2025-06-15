@@ -1,7 +1,6 @@
 #pragma once
 
-#include "misc/FileDescriptor.hpp"
-#include "misc/memory.hpp"
+#include "../types.hpp"
 #include <format>
 #include <functional>
 #include <netinet/in.h>
@@ -51,7 +50,7 @@ class Client {
 
   private:
 	WP<Client>			self;
-	SP<CFileDescriptor> m_sockfd;
+	SP<LibSock::CFileDescriptor> m_sockfd;
 	sockaddr_in			m_addr;
 	socklen_t			m_addrLen = sizeof(m_addr);
 	std::string			m_name;

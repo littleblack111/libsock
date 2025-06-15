@@ -1,5 +1,6 @@
 #include "libsock/server/client.hpp"
-#include "../misc/memory.hpp"
+#include "libsock/types.hpp"
+#include "misc/FileDescriptor.hpp"
 // #include "chatManager.hpp"
 #include "libsock/server/server.hpp"
 // #include "sessionManager.hpp"
@@ -14,7 +15,7 @@
 using namespace LibSock::Client;
 
 Client::Client(bool track, bool oneShot) : m_track(track), m_oneShot(oneShot) {
-	m_sockfd = std::make_shared<CFileDescriptor>(
+	m_sockfd = std::make_shared<LibSock::CFileDescriptor>(
 		accept(LibSock::Server::pServer->getSocket()->get(),
 			   reinterpret_cast<sockaddr *>(&m_addr),
 			   &m_addrLen)); // if this is in the init list, it will run before
