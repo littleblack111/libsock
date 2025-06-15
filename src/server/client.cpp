@@ -1,28 +1,30 @@
 #include "libsock/server/client.hpp"
+#include "libsock/server/server.hpp"
 #include "libsock/types.hpp"
 #include "misc/FileDescriptor.hpp"
-// #include "chatManager.hpp"
-#include "libsock/server/server.hpp"
-// #include "sessionManager.hpp"
 #include <algorithm>
 #include <arpa/inet.h>
-#include <cerrno>
 #include <cstring>
 #include <format>
+#include <memory>
 #include <optional>
 #include <sys/socket.h>
 
-using namespace LibSock::Client;
+using namespace LibSock::Server;
 
-Client::Client(bool track, bool oneShot) : m_track(track), m_oneShot(oneShot) {
+Client::Client(SP<Server> server, SP<Clients> clients, bool track, bool oneShot)
+	: m_track(track)
+	, m_oneShot(oneShot) {
+	if (!pServer || !pClients)
+		throw std::runtime_error("server:client: Server/ClientManager doesn't exist");
 	m_sockfd = std::make_shared<LibSock::CFileDescriptor>(
-		accept(LibSock::Server::pServer->getSocket()->get(),
-			   reinterpret_cast<sockaddr *>(&m_addr),
-			   &m_addrLen)); // if this is in the init list, it will run before
-							 // m_addrLen, so it won't work :/
+		accept(pServer->getSocket()->get(), reinterpret_cast<sockaddr *>(&m_addr),
+			   &m_addrLen)
+	); // if this is in the init list, it will run before
+	   // m_addrLen, so it won't work :/
 
 	if (!m_sockfd->isValid())
-		throw std::runtime_error("session: Failed to create socket");
+		throw std::runtime_error("server:client: Failed to create socket");
 
 	m_ip.resize(INET_ADDRSTRLEN);
 	inet_ntop(AF_INET, &m_addr.sin_addr, &m_ip[0], INET_ADDRSTRLEN);
@@ -68,7 +70,7 @@ void SRecvData::sanitize() {
 	if (const auto start = data.find_first_not_of(" \t\r\n");
 		start != std::string::npos) {
 		const auto end = data.find_last_not_of(" \t\r\n");
-		data = data.substr(start, end - start + 1);
+		data		   = data.substr(start, end - start + 1);
 	} else
 		data.clear();
 }
@@ -98,8 +100,7 @@ Client::read(std::optional<std::function<void(const SRecvData &)>> cb) {
 }
 
 UP<SRecvData>
-Client::read(const std::string &msg,
-			 std::optional<std::function<void(const SRecvData &)>> cb) {
+Client::read(const std::string &msg, std::optional<std::function<void(const SRecvData &)>> cb) {
 	write("{}", msg);
 	m_szReading = msg;
 	return read();
@@ -118,18 +119,17 @@ bool Client::isValid() {
 	if (!m_sockfd->isValid() || m_name.empty())
 		return false;
 
-	int err = 0;
+	int		  err  = 0;
 	socklen_t size = sizeof(err);
 	return getsockopt(m_sockfd->get(), SOL_SOCKET, SO_ERROR, &err, &size) >=
 			   0 &&
 		   err == 0;
 }
 
-bool Client::write(const std::string &msg,
-				   std::optional<std::function<void(const SRecvData &)>> cb) {
+bool Client::write(const std::string &msg, std::optional<std::function<void(const SRecvData &)>> cb) {
 	const auto r = write("{}", msg);
 	if (cb) {
-		auto recvData = std::make_unique<SRecvData>();
+		auto recvData  = std::make_unique<SRecvData>();
 		recvData->data = msg;
 		recvData->good = r;
 		(*cb)(*recvData);

@@ -5,7 +5,7 @@
 #include <unistd.h>
 #include <utility>
 
-using namespace LibSock::Client;
+using namespace LibSock::Server;
 
 void Clients::shutdownClients() {
 	if (m_vClients.empty())
@@ -15,7 +15,7 @@ void Clients::shutdownClients() {
 		if (client) {
 			client->write("Server shutting down");
 			if (!client->getName().empty())
-				pClients->broadcast(std::format("{} has left the chat", client->getName()), WP<Client>(client));
+				broadcast(std::format("{} has left the chat", client->getName()), WP<Client>(client));
 		}
 	}
 
@@ -29,11 +29,11 @@ void Clients::shutdownClients() {
 }
 
 Clients::Clients() {
-	if (std::atexit([]() {
-			if (pClients)
-				pClients->shutdownClients();
-		}))
-		void(); // failed to register exit handler...
+	// if (std::atexit([&]() {
+	// 		shutdownClients();
+	// 	}))
+	// 	void(); // failed to register exit handler...
+	pClients = SP<Clients>(this);
 };
 
 Clients::~Clients() {
@@ -47,7 +47,7 @@ Clients::~Clients() {
 void Clients::newClient(std::optional<std::function<void()>> cb) {
 	if (cb)
 		(*cb)();
-	SP	  client		  = std::make_shared<Client>();
+	SP	  client		  = std::make_shared<Client>(pServer, SP<Clients>(this));
 	auto &instance		  = m_vClients.emplace_back(std::jthread([client]() { client->run(); }), client);
 	instance.second->self = std::weak_ptr<Client>(instance.second);
 }
@@ -114,7 +114,7 @@ void Clients::kick(WP<Client> clientWeak, const bool kill, const std::string &re
 				// this only exist when the client is registered
 				// not sure why the second is null, but m_name definately is since it's setted during register
 				// but we don't need to notify people if the client didn't even "join"/register anyways
-				pClients->broadcast(std::format("{} has left the chat", client->getName()), clientWeak);
+				broadcast(std::format("{} has left the chat", client->getName()), clientWeak);
 
 			if (!reason.empty())
 				client->write(reason);

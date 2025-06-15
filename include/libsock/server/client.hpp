@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../types.hpp"
+#include "server.hpp"
 #include <format>
 #include <functional>
 #include <netinet/in.h>
@@ -11,7 +12,7 @@
 #include <vector>
 
 namespace LibSock {
-namespace Client {
+namespace Server {
 
 struct SRecvData {
 	std::string	 data;
@@ -29,9 +30,12 @@ enum eEventType : std::uint8_t {
 	WRITE
 };
 
+class Clients;
+inline SP<Clients> pClients;
+
 class Client {
   public:
-	Client(bool track = false, bool oneShot = true);
+	Client(SP<Server> server = SP<Server>(pServer), SP<Clients> clients = pClients, bool track = false, bool oneShot = true);
 	~Client();
 
 	const std::string &getName() const;
@@ -49,15 +53,15 @@ class Client {
 	bool isValid();
 
   private:
-	WP<Client>			self;
+	WP<Client>					 self;
 	SP<LibSock::CFileDescriptor> m_sockfd;
-	sockaddr_in			m_addr;
-	socklen_t			m_addrLen = sizeof(m_addr);
-	std::string			m_name;
-	std::string			m_ip;
-	int					m_port;
-	bool				m_track;
-	bool				m_oneShot;
+	sockaddr_in					 m_addr;
+	socklen_t					 m_addrLen = sizeof(m_addr);
+	std::string					 m_name;
+	std::string					 m_ip;
+	int							 m_port;
+	bool						 m_track;
+	bool						 m_oneShot;
 
 	std::optional<std::string> m_szReading = std::nullopt;
 
@@ -98,7 +102,5 @@ class Clients {
 	std::vector<std::pair<std::jthread, SP<Client>>> m_vClients;
 	std::vector<SData>								 m_vDatas;
 };
-inline SP<Clients> pClients;
-
-} // namespace Client
+} // namespace Server
 } // namespace LibSock

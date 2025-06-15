@@ -9,12 +9,13 @@ using namespace LibSock::Server;
 
 Server::Server(uint16_t port, bool reuseaddr, bool keepalive)
 	: m_sockfd(
-		  std::make_shared<LibSock::CFileDescriptor>(socket(AF_INET, SOCK_STREAM, 0))) {
+		  std::make_shared<LibSock::CFileDescriptor>(socket(AF_INET, SOCK_STREAM, 0))
+	  ) {
 	std::lock_guard<std::mutex> lk(m_mutex);
 	if (!m_sockfd->isValid() || m_sockfd->get() < 0)
 		throw std::runtime_error("Failed to create socket");
 
-	constexpr int opt = 1;
+	constexpr int opt  = 1;
 	constexpr int size = sizeof(opt);
 	if (keepalive &&
 		setsockopt(m_sockfd->get(), SOL_SOCKET, SO_REUSEADDR, &opt, size) < 0)
@@ -25,13 +26,14 @@ Server::Server(uint16_t port, bool reuseaddr, bool keepalive)
 		throw std::runtime_error("setsockopt(SO_KEEPALIVE) failed");
 
 	memset(&m_addr, 0, sizeof(m_addr));
-	m_addr.sin_family = AF_INET;
-	m_addr.sin_port = htons(port);
+	m_addr.sin_family	   = AF_INET;
+	m_addr.sin_port		   = htons(port);
 	m_addr.sin_addr.s_addr = INADDR_ANY;
-	if (bind(m_sockfd->get(), reinterpret_cast<sockaddr *>(&m_addr),
-			 sizeof(m_addr)) ||
+	if (bind(m_sockfd->get(), reinterpret_cast<sockaddr *>(&m_addr), sizeof(m_addr)) ||
 		listen(m_sockfd->get(), 5))
 		throw std::runtime_error("Failed to bind or listen on socket");
+
+	pServer = SP<Server>(this);
 };
 
 Server::~Server() { m_sockfd.reset(); }
