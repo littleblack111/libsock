@@ -1,0 +1,156 @@
+#include "libsock/server/client.hpp"
+#include "../misc/memory.hpp"
+// #include "chatManager.hpp"
+#include "libsock/server/server.hpp"
+// #include "sessionManager.hpp"
+#include <algorithm>
+#include <arpa/inet.h>
+#include <cerrno>
+#include <cstring>
+#include <format>
+#include <optional>
+#include <sys/socket.h>
+
+using namespace LibSock::Client;
+
+Client::Client(bool track, bool oneShot) : m_track(track), m_oneShot(oneShot) {
+	m_sockfd = std::make_shared<CFileDescriptor>(
+		accept(LibSock::Server::pServer->getSocket()->get(),
+			   reinterpret_cast<sockaddr *>(&m_addr),
+			   &m_addrLen)); // if this is in the init list, it will run before
+							 // m_addrLen, so it won't work :/
+
+	if (!m_sockfd->isValid())
+		throw std::runtime_error("session: Failed to create socket");
+
+	m_ip.resize(INET_ADDRSTRLEN);
+	inet_ntop(AF_INET, &m_addr.sin_addr, &m_ip[0], INET_ADDRSTRLEN);
+	m_ip.resize(strlen(m_ip.c_str()));
+	m_port = ntohs(m_addr.sin_port);
+}
+
+Client::~Client() {
+#ifdef DEBUG
+	onDisconnect();
+#endif
+	m_sockfd.reset();
+}
+
+void Client::recvLoop() {
+	while (true) {
+		auto recvData = read(std::format("{}: ", m_name));
+		if (!recvData->good)
+			break;
+
+		recvData->sanitize();
+		if (recvData->isEmpty())
+			continue;
+
+		// pChatManager->newMessage({.msg = recvData->data, .username = m_name,
+		// .sender = self, .admin = isCommand});
+	}
+}
+
+bool SRecvData::isEmpty() const {
+	return data.empty() ||
+		   std::ranges::all_of(data, [](char c) { return std::isspace(c); });
+}
+
+void SRecvData::sanitize() {
+	if (!data.empty() && data.back() == '\n')
+		data.pop_back();
+
+	data.erase(std::remove(data.begin(), data.end(), asciiEscape),
+			   data.end()); // don't accept ASCII code, might mess up terminal
+							// // NOLINT
+
+	if (const auto start = data.find_first_not_of(" \t\r\n");
+		start != std::string::npos) {
+		const auto end = data.find_last_not_of(" \t\r\n");
+		data = data.substr(start, end - start + 1);
+	} else
+		data.clear();
+}
+
+UP<SRecvData>
+Client::read(std::optional<std::function<void(const SRecvData &)>> cb) {
+	auto recvData = std::make_unique<SRecvData>();
+
+	recvData->data.resize(recvData->size);
+	ssize_t size = recv(m_sockfd->get(), &recvData->data[0], recvData->size, 0);
+
+	if (size < 0) {
+	} else if (size == 0) {
+		recvData->good = false;
+		if (cb)
+			(*cb)(*recvData);
+	} else {
+		recvData->data.resize(size);
+		recvData->good = true;
+	}
+
+#ifdef DEBUG
+	onRecv(*recvData);
+#endif
+	m_szReading.reset();
+	return recvData;
+}
+
+UP<SRecvData>
+Client::read(const std::string &msg,
+			 std::optional<std::function<void(const SRecvData &)>> cb) {
+	write("{}", msg);
+	m_szReading = msg;
+	return read();
+}
+
+void Client::run() {
+	for (const auto &chat : pClients->getDatas()) {
+		write(chat.msg);
+		recvLoop();
+
+		pClients->kick(self);
+	}
+}
+
+bool Client::isValid() {
+	if (!m_sockfd->isValid() || m_name.empty())
+		return false;
+
+	int err = 0;
+	socklen_t size = sizeof(err);
+	return getsockopt(m_sockfd->get(), SOL_SOCKET, SO_ERROR, &err, &size) >=
+			   0 &&
+		   err == 0;
+}
+
+bool Client::write(const std::string &msg,
+				   std::optional<std::function<void(const SRecvData &)>> cb) {
+	const auto r = write("{}", msg);
+	if (cb) {
+		auto recvData = std::make_unique<SRecvData>();
+		recvData->data = msg;
+		recvData->good = r;
+		(*cb)(*recvData);
+	}
+	return r;
+}
+
+const std::string &Client::getName() const { return m_name; }
+
+const std::string &Client::getIp() const { return m_ip; }
+
+template <typename... Args>
+bool Client::write(std::format_string<Args...> fmt, Args &&...args) {
+	std::string msg = std::format(fmt, std::forward<Args>(args)...);
+	if (m_szReading) {
+		msg.insert(0, "\r");
+		msg.append(*m_szReading);
+	}
+
+	if (send(m_sockfd->get(), msg.c_str(), msg.size(), 0) < 0) {
+		// cb somehow
+		return false;
+	}
+	return true;
+}
