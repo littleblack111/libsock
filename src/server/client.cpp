@@ -75,8 +75,7 @@ void SRecvData::sanitize() {
 		data.clear();
 }
 
-UP<SRecvData>
-Client::read(std::optional<std::function<void(const SRecvData &)>> cb) {
+UP<SRecvData> Client::read(std::optional<std::function<std::any(const SRecvData &)>> cb) {
 	auto recvData = std::make_unique<SRecvData>();
 
 	recvData->data.resize(recvData->size);
@@ -99,11 +98,10 @@ Client::read(std::optional<std::function<void(const SRecvData &)>> cb) {
 	return recvData;
 }
 
-UP<SRecvData>
-Client::read(const std::string &msg, std::optional<std::function<void(const SRecvData &)>> cb) {
+UP<SRecvData> Client::read(const std::string &msg, std::optional<std::function<std::any(const SRecvData &)>> cb) {
 	write("{}", msg);
 	m_szReading = msg;
-	return read();
+	return read(cb);
 }
 
 void Client::run() {
@@ -126,7 +124,7 @@ bool Client::isValid() {
 		   err == 0;
 }
 
-bool Client::write(const std::string &msg, std::optional<std::function<void(const SRecvData &)>> cb) {
+bool Client::write(const std::string &msg, std::optional<std::function<std::any(const SRecvData &)>> cb) {
 	const auto r = write("{}", msg);
 	if (cb) {
 		auto recvData  = std::make_unique<SRecvData>();

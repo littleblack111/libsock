@@ -2,6 +2,7 @@
 
 #include "../types.hpp"
 #include "server.hpp"
+#include <any>
 #include <format>
 #include <functional>
 #include <netinet/in.h>
@@ -42,9 +43,9 @@ class Client {
 	const std::string &getIp() const;
 	bool			   isAdmin() const;
 
-	UP<SRecvData> read(std::optional<std::function<void(const SRecvData &)>> cb = std::nullopt);
-	UP<SRecvData> read(const std::string &msg, std::optional<std::function<void(const SRecvData &)>> cb = std::nullopt);
-	bool		  write(const std::string &msg, std::optional<std::function<void(const SRecvData &)>> cb = std::nullopt);
+	UP<SRecvData> read(std::optional<std::function<std::any(const SRecvData &)>> cb = std::nullopt);
+	UP<SRecvData> read(const std::string &msg, std::optional<std::function<std::any(const SRecvData &)>> cb = std::nullopt);
+	bool		  write(const std::string &msg, std::optional<std::function<std::any(const SRecvData &)>> cb = std::nullopt);
 	template <typename... Args>
 	bool write(std::format_string<Args...> fmt, Args &&...args);
 
@@ -81,9 +82,8 @@ class Clients {
 	Clients();
 	~Clients();
 
-	void newClient(std::optional<std::function<void()>> cb = std::nullopt);
+	WP<Client> newClient(std::optional<std::function<std::any(WP<Client>)>> cb = std::nullopt);
 
-	void run(std::optional<std::function<void()>> cb = std::nullopt);
 	void broadcast(const std::string &msg, std::optional<WP<Client>> self = std::nullopt); // second param only specified when we want to exclude the sender
 	void kick(WP<Client> client, const bool kill = false, const std::string &reason = "");
 	void addClient(const Client &client);

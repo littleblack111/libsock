@@ -1,5 +1,6 @@
 #include "libsock/server/client.hpp"
 #include <algorithm>
+#include <any>
 #include <format>
 #include <ranges>
 #include <unistd.h>
@@ -44,17 +45,13 @@ Clients::~Clients() {
 	}
 }
 
-void Clients::newClient(std::optional<std::function<void()>> cb) {
-	if (cb)
-		(*cb)();
-	SP	  client		  = std::make_shared<Client>(pServer, SP<Clients>(this));
+WP<Client> Clients::newClient(std::optional<std::function<std::any(WP<Client>)>> cb) {
+	SP	  client		  = std::make_shared<Client>();
 	auto &instance		  = m_vClients.emplace_back(std::jthread([client]() { client->run(); }), client);
 	instance.second->self = std::weak_ptr<Client>(instance.second);
-}
-
-void Clients::run(std::optional<std::function<void()>> cb) {
-	while (true)
-		newClient(cb);
+	if (cb)
+		(*cb)(instance.second);
+	return instance.second;
 }
 
 void Clients::broadcast(const std::string &msg, std::optional<std::weak_ptr<Client>> self) {
