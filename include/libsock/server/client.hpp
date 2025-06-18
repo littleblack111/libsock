@@ -39,7 +39,6 @@ class Client {
 	Client(SP<Server> server = SP<Server>(pServer), SP<Clients> clients = pClients, bool track = false, bool oneShot = true);
 	~Client();
 
-	const std::string &getName() const;
 	const std::string &getIp() const;
 	bool			   isAdmin() const;
 
@@ -58,7 +57,6 @@ class Client {
 	SP<LibSock::CFileDescriptor> m_sockfd;
 	sockaddr_in					 m_addr;
 	socklen_t					 m_addrLen = sizeof(m_addr);
-	std::string					 m_name;
 	std::string					 m_ip;
 	int							 m_port;
 	bool						 m_track;
@@ -88,10 +86,8 @@ class Clients {
 	void kick(WP<Client> client, const bool kill = false, const std::string &reason = "", std::optional<std::function<std::any(const std::vector<std::pair<std::jthread, SP<Client>>>::iterator &)>> cb = std::nullopt);
 	void addClient(const Client &client);
 
-	bool nameExists(const std::string &name);
 	void shutdownClients(std::optional<std::function<std::any(const std::vector<std::pair<std::jthread, SP<Client>>> &)>> cb = std::nullopt);
 
-	SP<Client>				getByName(const std::string &name) const;
 	SP<Client>				getByIp(const std::string &ip) const;
 	std::vector<SP<Client>> getClients() const;
 	std::vector<SData>		getDatas() const;

@@ -41,7 +41,7 @@ Client::~Client() {
 
 void Client::recvLoop() {
 	while (true) {
-		auto recvData = read(std::format("{}: ", m_name));
+		auto recvData = read();
 		if (!recvData->good)
 			break;
 
@@ -114,7 +114,7 @@ void Client::run() {
 }
 
 bool Client::isValid() {
-	if (!m_sockfd->isValid() || m_name.empty())
+	if (!m_sockfd->isValid())
 		return false;
 
 	int		  err  = 0;
@@ -134,8 +134,6 @@ bool Client::write(const std::string &msg, std::optional<std::function<std::any(
 	}
 	return r;
 }
-
-const std::string &Client::getName() const { return m_name; }
 
 const std::string &Client::getIp() const { return m_ip; }
 

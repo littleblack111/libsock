@@ -68,24 +68,6 @@ void Clients::broadcast(const SData &msg) {
 	m_vDatas.push_back(msg);
 }
 
-bool Clients::nameExists(const std::string &name) {
-	auto it = std::ranges::find_if(m_vClients, [&name](const auto &s) { return s.second->getName() == name; });
-
-	if (it != m_vClients.end()) {
-		if (!it->second->isValid()) {
-			kick(std::weak_ptr<Client>(it->second), true, "Connection lost");
-			return false;
-		}
-		return true;
-	}
-	return false;
-}
-
-SP<Client> Clients::getByName(const std::string &name) const {
-	auto it = std::ranges::find_if(m_vClients, [&name](const auto &s) { return s.second->getName() == name; });
-	return it != m_vClients.end() ? it->second : nullptr;
-}
-
 SP<Client> Clients::getByIp(const std::string &ip) const {
 	auto it = std::ranges::find_if(m_vClients, [&ip](const auto &s) { return s.second->getIp() == ip; });
 	return it != m_vClients.end() ? it->second : nullptr;
@@ -106,7 +88,7 @@ void Clients::kick(WP<Client> clientWeak, const bool kill, const std::string &re
 
 	for (auto it = m_vClients.begin(); it != m_vClients.end(); ++it) {
 		if (it->second == client) {
-			if (client && !client->getName().empty())
+			if (client)
 				// this only exist when the client is registered
 				// not sure why the second is null
 				if (cb)
