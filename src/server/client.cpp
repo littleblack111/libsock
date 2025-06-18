@@ -49,8 +49,7 @@ void Client::recvLoop() {
 		if (recvData->isEmpty())
 			continue;
 
-		// pChatManager->newMessage({.msg = recvData->data, .username = m_name,
-		// .sender = self, .admin = isCommand});
+		pClients->m_vDatas.push_back({recvData->data, self});
 	}
 }
 

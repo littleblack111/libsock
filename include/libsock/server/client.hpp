@@ -97,6 +97,8 @@ class Clients {
 
 	std::vector<std::pair<std::jthread, SP<Client>>> m_vClients;
 	std::vector<SData>								 m_vDatas;
+
+	friend class Client;
 };
 } // namespace Server
 } // namespace LibSock
