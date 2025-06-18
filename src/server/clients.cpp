@@ -45,7 +45,7 @@ Clients::~Clients() {
 }
 
 WP<Client> Clients::newClient(std::optional<std::function<std::any(WP<Client>)>> cb) {
-	SP	  client		  = std::make_shared<Client>();
+	SP	  client		  = SP<Client>(new Client());
 	auto &instance		  = m_vClients.emplace_back(std::jthread([client]() { client->run(); }), client);
 	instance.second->self = std::weak_ptr<Client>(instance.second);
 	if (cb)

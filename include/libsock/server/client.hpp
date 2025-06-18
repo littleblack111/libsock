@@ -36,7 +36,6 @@ inline SP<Clients> pClients;
 
 class Client {
   public:
-	Client(SP<Server> server = SP<Server>(pServer), SP<Clients> clients = pClients, bool track = false, bool oneShot = true);
 	~Client();
 
 	const std::string &getIp() const;
@@ -53,6 +52,8 @@ class Client {
 	bool isValid();
 
   private:
+	Client(SP<Server> server = SP<Server>(pServer), SP<Clients> clients = pClients, bool track = false, bool oneShot = true);
+
 	WP<Client>					 self;
 	SP<LibSock::CFileDescriptor> m_sockfd;
 	sockaddr_in					 m_addr;
