@@ -3,22 +3,18 @@
 #include <any>
 #include <format>
 #include <ranges>
+#include <stdexcept>
 #include <unistd.h>
 #include <utility>
 
 using namespace LibSock::Server;
 
-void Clients::shutdownClients() {
+void Clients::shutdownClients(std::optional<std::function<std::any(const std::vector<std::pair<std::jthread, SP<Client>>> &)>> cb) {
 	if (m_vClients.empty())
 		return;
 
-	for (auto &[thread, client] : m_vClients) {
-		if (client) {
-			client->write("Server shutting down");
-			if (!client->getName().empty())
-				broadcast(std::format("{} has left the chat", client->getName()), WP<Client>(client));
-		}
-	}
+	if (cb)
+		(*cb)(m_vClients);
 
 	for (auto &[thread, client] : m_vClients) {
 		if (thread.joinable())
@@ -34,6 +30,9 @@ Clients::Clients() {
 	// 		shutdownClients();
 	// 	}))
 	// 	void(); // failed to register exit handler...
+	if (pClients)
+		throw std::runtime_error("server:client: ClientManager already exist");
+
 	pClients = SP<Clients>(this);
 };
 

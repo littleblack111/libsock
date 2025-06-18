@@ -89,7 +89,7 @@ class Clients {
 	void addClient(const Client &client);
 
 	bool nameExists(const std::string &name);
-	void shutdownClients();
+	void shutdownClients(std::optional<std::function<std::any(const std::vector<std::pair<std::jthread, SP<Client>>> &)>> cb = std::nullopt);
 
 	SP<Client>				getByName(const std::string &name) const;
 	SP<Client>				getByIp(const std::string &ip) const;
