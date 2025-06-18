@@ -99,7 +99,7 @@ std::vector<SData> Clients::getDatas() const {
 	return m_vDatas;
 }
 
-void Clients::kick(WP<Client> clientWeak, const bool kill, const std::string &reason) {
+void Clients::kick(WP<Client> clientWeak, const bool kill, const std::string &reason, std::optional<std::function<std::any(const std::vector<std::pair<std::jthread, SP<Client>>>::iterator &)>> cb) {
 	auto client = clientWeak.lock();
 	if (!client)
 		return;
@@ -108,9 +108,9 @@ void Clients::kick(WP<Client> clientWeak, const bool kill, const std::string &re
 		if (it->second == client) {
 			if (client && !client->getName().empty())
 				// this only exist when the client is registered
-				// not sure why the second is null, but m_name definately is since it's setted during register
-				// but we don't need to notify people if the client didn't even "join"/register anyways
-				broadcast(std::format("{} has left the chat", client->getName()), clientWeak);
+				// not sure why the second is null
+				if (cb)
+					(*cb)(it);
 
 			if (!reason.empty())
 				client->write(reason);
