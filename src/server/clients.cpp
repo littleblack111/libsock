@@ -54,7 +54,7 @@ WP<Client> Clients::newClient(std::optional<std::function<std::any(WP<Client>)>>
 }
 
 void Clients::broadcast(const std::string &msg, std::optional<std::weak_ptr<Client>> self) {
-	broadcast(SData{msg, self, false});
+	broadcast(SData{msg, self});
 }
 
 void Clients::broadcast(const SData &msg) {

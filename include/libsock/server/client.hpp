@@ -73,7 +73,6 @@ class Client {
 struct SData {
 	std::string				  msg;
 	std::optional<WP<Client>> sender = std::nullopt;
-	bool					  admin	 = false;
 };
 
 class Clients {
