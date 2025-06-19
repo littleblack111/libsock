@@ -1,6 +1,8 @@
 #pragma once
 
 #include "../types.hpp"
+#include "clients.hpp"
+#include "server.hpp"
 #include <any>
 #include <format>
 #include <functional>
@@ -11,12 +13,6 @@
 
 namespace LibSock {
 namespace Server {
-
-class Server;
-class Clients;
-
-extern SP<Server>  pServer;
-extern SP<Clients> pClients;
 
 struct SRecvData {
 	std::string	 data;
@@ -52,7 +48,7 @@ class Client {
 	bool isValid();
 
   private:
-	Client(SP<Server> server = SP<Server>(pServer), SP<Clients> clients = pClients, bool track = false, bool oneShot = true);
+	Client(SP<Server> server = pServer, SP<Clients> clients = pClients, bool track = false, bool oneShot = true);
 
 	WP<Client>					 self;
 	SP<LibSock::CFileDescriptor> m_sockfd;

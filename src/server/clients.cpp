@@ -9,6 +9,9 @@
 
 using namespace LibSock::Server;
 
+namespace LibSock {
+namespace Server {
+
 void Clients::shutdownClients(std::optional<std::function<std::any(const std::vector<std::pair<std::jthread, SP<Client>>> &)>> cb) {
 	if (m_vClients.empty())
 		return;
@@ -27,14 +30,25 @@ void Clients::shutdownClients(std::optional<std::function<std::any(const std::ve
 
 Clients::Clients() {
 	if (std::atexit([]() {
-			pClients->shutdownClients();
+			if (pClients)
+				pClients->shutdownClients();
 		}))
 		void(); // failed to register exit handler...
-	if (pClients)
-		throw std::runtime_error("server:client: ClientManager already exist");
+}
 
-	pClients = SP<Clients>(this);
-};
+SP<Clients> Clients::create() {
+	if (pClients)
+		throw std::runtime_error("server:clients ClientManager already exist");
+
+	pClients = SP<Clients>(new Clients());
+	return pClients;
+}
+
+SP<Clients> Clients::get() {
+	if (!pClients)
+		pClients = shared_from_this();
+	return pClients;
+}
 
 Clients::~Clients() {
 	for (auto &[thread, client] : m_vClients) {
@@ -45,7 +59,7 @@ Clients::~Clients() {
 }
 
 WP<Client> Clients::newClient(std::optional<std::function<std::any(WP<Client>)>> cb) {
-	SP	  client		  = SP<Client>(new Client());
+	SP	  client		  = SP<Client>(new Client(pServer, shared_from_this()));
 	auto &instance		  = m_vClients.emplace_back(std::jthread([client]() { client->run(); }), client);
 	instance.second->self = std::weak_ptr<Client>(instance.second);
 	if (cb)
@@ -111,3 +125,6 @@ void Clients::kick(WP<Client> clientWeak, const bool kill, const std::string &re
 		}
 	}
 }
+
+} // namespace Server
+} // namespace LibSock

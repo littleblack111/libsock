@@ -8,6 +8,9 @@
 
 using namespace LibSock::Server;
 
+namespace LibSock {
+namespace Server {
+
 Server::Server(uint16_t port, bool reuseaddr, bool keepalive)
 	: m_sockfd(
 		  std::make_shared<LibSock::CFileDescriptor>(socket(AF_INET, SOCK_STREAM, 0))
@@ -36,10 +39,28 @@ Server::Server(uint16_t port, bool reuseaddr, bool keepalive)
 	if (bind(m_sockfd->get(), reinterpret_cast<sockaddr *>(&m_addr), sizeof(m_addr)) ||
 		listen(m_sockfd->get(), 5))
 		throw std::runtime_error("server:server Failed to bind or listen on socket");
+}
 
-	pServer = SP<Server>(this);
-};
+SP<Server> Server::create(uint16_t port, bool reuseaddr, bool keepalive) {
+	if (pServer)
+		throw std::runtime_error("server:server Server already exist");
+	pServer = SP<Server>(new Server(port, reuseaddr, keepalive));
+	return pServer;
+}
 
-Server::~Server() { m_sockfd.reset(); }
+SP<Server> Server::get() {
+	if (!pServer)
+		pServer = shared_from_this();
+	return pServer;
+}
 
-std::shared_ptr<LibSock::CFileDescriptor> Server::getSocket() const { return m_sockfd; }
+Server::~Server() {
+	m_sockfd.reset();
+}
+
+SP<LibSock::CFileDescriptor> Server::getSocket() const {
+	return m_sockfd;
+}
+
+} // namespace Server
+} // namespace LibSock

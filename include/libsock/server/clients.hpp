@@ -3,6 +3,7 @@
 #include "../types.hpp"
 #include <any>
 #include <functional>
+#include <memory>
 #include <optional>
 #include <string>
 #include <thread>
@@ -17,9 +18,10 @@ struct SData {
 	std::string				  msg;
 	std::optional<WP<Client>> sender = std::nullopt;
 };
-class Clients {
+
+class Clients : public std::enable_shared_from_this<Clients> {
   public:
-	Clients();
+	static SP<Clients> create();
 	~Clients();
 
 	WP<Client> newClient(std::optional<std::function<std::any(WP<Client>)>> cb = std::nullopt);
@@ -36,13 +38,16 @@ class Clients {
 	std::vector<SData>		getDatas() const;
 
   private:
+	Clients();
 	void broadcast(const SData &msg);
 
 	std::vector<std::pair<std::jthread, SP<Client>>> m_vClients;
 	std::vector<SData>								 m_vDatas;
 
+	SP<Clients> get();
+
 	friend class Client;
 };
-
+inline SP<Clients> pClients;
 } // namespace Server
 } // namespace LibSock

@@ -16,13 +16,16 @@ using namespace LibSock::Server;
 Client::Client(SP<Server> server, SP<Clients> clients, bool track, bool oneShot)
 	: m_track(track)
 	, m_oneShot(oneShot) {
-	if (!pServer || !pClients)
-		throw std::runtime_error("server:client: Server/ClientManager doesn't exist");
-	m_sockfd = std::make_shared<LibSock::CFileDescriptor>(
-		accept(pServer->getSocket()->get(), reinterpret_cast<sockaddr *>(&m_addr),
-			   &m_addrLen)
-	); // if this is in the init list, it will run before
-	   // m_addrLen, so it won't work :/
+	pServer	 = std::move(server);
+	pClients = std::move(clients);
+
+	if (!pClients)
+		throw std::runtime_error("server:client: ClientManager doesn't exist");
+	if (!pServer)
+		throw std::runtime_error("server:client: Server doesn't exist");
+
+	m_sockfd = std::make_shared<LibSock::CFileDescriptor>(accept(pServer->getSocket()->get(), reinterpret_cast<sockaddr *>(&m_addr), &m_addrLen)); // if this is in the init list, it will run before
+																																				   // m_addrLen, so it won't work :/
 
 	if (!m_sockfd->isValid())
 		throw std::runtime_error("server:client: Failed to create socket");
