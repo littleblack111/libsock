@@ -1,4 +1,5 @@
 #include "libsock/server/client.hpp"
+#include "libsock/server/clients.hpp"
 #include "libsock/server/server.hpp"
 #include "libsock/types.hpp"
 #include "misc/FileDescriptor.hpp"

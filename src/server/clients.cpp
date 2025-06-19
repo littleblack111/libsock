@@ -1,3 +1,4 @@
+#include "libsock/server/clients.hpp"
 #include "libsock/server/client.hpp"
 #include <algorithm>
 #include <any>
