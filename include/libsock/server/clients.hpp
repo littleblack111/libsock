@@ -22,13 +22,10 @@ class Clients {
 	Clients();
 	~Clients();
 
-	WP<Client> newClient(
-		std::optional<std::function<std::any(WP<Client>)>> cb = std::nullopt
-	);
+	WP<Client> newClient(std::optional<std::function<std::any(WP<Client>)>> cb = std::nullopt);
 
-	void broadcast(const std::string		&msg,
-				   std::optional<WP<Client>> self = std::nullopt); // second param only specified when we
-																   // want to exclude the sender
+	void broadcast(const std::string &msg, std::optional<WP<Client>> self = std::nullopt); // second param only specified when we
+																						   // want to exclude the sender
 	void kick(WP<Client> client, const bool kill = false, const std::string &reason = "", std::optional<std::function<std::any(const std::vector<std::pair<std::jthread, SP<Client>>>::iterator &)>> cb = std::nullopt);
 	void addClient(const Client &client);
 
