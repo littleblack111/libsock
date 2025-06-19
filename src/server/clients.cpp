@@ -1,7 +1,6 @@
 #include "libsock/server/client.hpp"
 #include <algorithm>
 #include <any>
-#include <format>
 #include <ranges>
 #include <stdexcept>
 #include <unistd.h>
@@ -26,10 +25,10 @@ void Clients::shutdownClients(std::optional<std::function<std::any(const std::ve
 }
 
 Clients::Clients() {
-	// if (std::atexit([&]() {
-	// 		shutdownClients();
-	// 	}))
-	// 	void(); // failed to register exit handler...
+	if (std::atexit([]() {
+			pClients->shutdownClients();
+		}))
+		void(); // failed to register exit handler...
 	if (pClients)
 		throw std::runtime_error("server:client: ClientManager already exist");
 
