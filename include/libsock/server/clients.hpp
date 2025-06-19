@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../types.hpp"
+#include "server.hpp"
 #include <any>
 #include <functional>
 #include <memory>
@@ -24,7 +25,7 @@ class Clients : public std::enable_shared_from_this<Clients> {
 	static SP<Clients> create();
 	~Clients();
 
-	WP<Client> newClient(std::optional<std::function<std::any(WP<Client>)>> cb = std::nullopt);
+	WP<Client> newClient(SP<Server> server = pServer, std::optional<std::function<std::any(WP<Client>)>> cb = std::nullopt);
 
 	void broadcast(const std::string &msg, std::optional<WP<Client>> self = std::nullopt); // second param only specified when we
 																						   // want to exclude the sender
