@@ -14,7 +14,8 @@ namespace Server {
 Server::Server(uint16_t port, bool reuseaddr, bool keepalive)
 	: m_sockfd(
 		  std::make_shared<LibSock::CFileDescriptor>(socket(AF_INET, SOCK_STREAM, 0))
-	  ) {
+	  )
+	, m_port(port) {
 	if (pServer)
 		throw std::runtime_error("server:server Server already exist");
 	std::lock_guard<std::mutex>
@@ -34,7 +35,7 @@ Server::Server(uint16_t port, bool reuseaddr, bool keepalive)
 
 	memset(&m_addr, 0, sizeof(m_addr));
 	m_addr.sin_family	   = AF_INET;
-	m_addr.sin_port		   = htons(port);
+	m_addr.sin_port		   = htons(m_port);
 	m_addr.sin_addr.s_addr = INADDR_ANY;
 	if (bind(m_sockfd->get(), reinterpret_cast<sockaddr *>(&m_addr), sizeof(m_addr)) ||
 		listen(m_sockfd->get(), 5))
