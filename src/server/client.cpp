@@ -126,12 +126,9 @@ bool Client::isValid() {
 
 bool Client::write(const std::string &msg, std::optional<std::function<bool(const SRecvData &)>> cb) {
 	auto r = write("{}", msg);
-	if (cb) {
-		auto recvData  = std::make_unique<SRecvData>();
-		recvData->data = msg;
-		recvData->good = r;
-		r			   = (*cb)(*recvData);
-	}
+	if (cb)
+		r = (*cb)({.data = msg, .size = msg.size(), .good = r});
+
 	return r;
 }
 
