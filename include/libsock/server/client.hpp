@@ -43,7 +43,8 @@ class Client {
 	template <typename... Args>
 	bool write(std::format_string<Args...> fmt, Args &&...args);
 
-	void run();
+	void resumeHistory();
+	void runLoop(bool resumeHistory = true, std::optional<std::function<std::any(const SRecvData &)>> cb = std::nullopt);
 
 	bool isValid();
 
@@ -61,7 +62,7 @@ class Client {
 
 	std::optional<std::string> m_szReading = std::nullopt;
 
-	void recvLoop();
+	void recvLoop(std::optional<std::function<std::any(const SRecvData &)>> cb = std::nullopt);
 
 	friend class Clients;
 };
