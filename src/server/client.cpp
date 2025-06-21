@@ -81,19 +81,17 @@ UP<SRecvData> Client::read(std::optional<std::function<bool(const SRecvData &)>>
 
 	recvData->data.resize(recvData->size);
 	ssize_t size = recv(m_sockfd->get(), &recvData->data[0], recvData->size, 0);
+	m_szReading.reset();
 
 	if (size < 0 || size == 0) {
 		recvData->good = false;
-		if (cb && !(*cb)(*recvData)) {
-			m_szReading.reset();
+		if (cb && !(*cb)(*recvData))
 			return nullptr;
-		}
 	} else {
 		recvData->data.resize(size);
 		recvData->good = true;
 	}
 
-	m_szReading.reset();
 	return recvData;
 }
 
