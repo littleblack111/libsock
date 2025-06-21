@@ -1,7 +1,6 @@
 #include "libsock/server/clients.hpp"
 #include "libsock/server/client.hpp"
 #include <algorithm>
-#include <any>
 #include <ranges>
 #include <stdexcept>
 #include <unistd.h>
@@ -12,12 +11,12 @@ using namespace LibSock::Server;
 namespace LibSock {
 namespace Server {
 
-void Clients::shutdownClients(std::optional<std::function<std::any(const std::vector<std::pair<std::jthread, SP<Client>>> &)>> cb) {
+void Clients::shutdownClients(std::optional<std::function<bool(const std::vector<std::pair<std::jthread, SP<Client>>> &)>> cb) {
 	if (m_vClients.empty())
 		return;
 
-	if (cb)
-		(*cb)(m_vClients);
+	if (cb && !(*cb)(m_vClients))
+		return;
 
 	for (auto &[thread, client] : m_vClients) {
 		if (thread.joinable())
@@ -58,7 +57,7 @@ Clients::~Clients() {
 	}
 }
 
-WP<Client> Clients::newClient(std::function<std::any(const WP<Client> &)> loopFunc, SP<Server> server) {
+WP<Client> Clients::newClient(std::function<void(const WP<Client> &)> loopFunc, SP<Server> server) {
 	SP	  client		  = SP<Client>(new Client(server, shared_from_this()));
 	auto &instance		  = m_vClients.emplace_back(std::jthread([&client, &loopFunc]() { loopFunc(client); }), client);
 	instance.second->self = std::weak_ptr<Client>(instance.second);
@@ -93,7 +92,7 @@ std::vector<SData> Clients::getDatas() const {
 	return m_vDatas;
 }
 
-void Clients::kick(WP<Client> clientWeak, const bool kill, const std::string &reason, std::optional<std::function<std::any(const std::vector<std::pair<std::jthread, SP<Client>>>::iterator &)>> cb) {
+void Clients::kick(WP<Client> clientWeak, const bool kill, const std::string &reason, std::optional<std::function<bool(const std::vector<std::pair<std::jthread, SP<Client>>>::iterator &)>> cb) {
 	auto client = clientWeak.lock();
 	if (!client)
 		return;
@@ -103,8 +102,8 @@ void Clients::kick(WP<Client> clientWeak, const bool kill, const std::string &re
 			if (client)
 				// this only exist when the client is registered
 				// not sure why the second is null
-				if (cb)
-					(*cb)(it);
+				if (cb && !(*cb)(it))
+					return;
 
 			if (!reason.empty())
 				client->write(reason);

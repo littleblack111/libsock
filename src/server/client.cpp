@@ -40,7 +40,7 @@ Client::~Client() {
 	m_sockfd.reset();
 }
 
-void Client::recvLoop(std::optional<std::function<std::any(const SRecvData &)>> cb) {
+void Client::recvLoop(std::optional<std::function<bool(const SRecvData &)>> cb) {
 	while (true) {
 		auto recvData = read();
 		if (!recvData->good)
@@ -52,8 +52,8 @@ void Client::recvLoop(std::optional<std::function<std::any(const SRecvData &)>> 
 
 		pClients->m_vDatas.push_back({recvData->data, self});
 
-		if (cb)
-			(*cb)(*recvData);
+		if (cb && !(*cb)(*recvData))
+			return;
 	}
 }
 
@@ -76,7 +76,7 @@ void SRecvData::sanitize() {
 		data.clear();
 }
 
-UP<SRecvData> Client::read(std::optional<std::function<std::any(const SRecvData &)>> cb) {
+UP<SRecvData> Client::read(std::optional<std::function<bool(const SRecvData &)>> cb) {
 	auto recvData = std::make_unique<SRecvData>();
 
 	recvData->data.resize(recvData->size);
@@ -84,8 +84,10 @@ UP<SRecvData> Client::read(std::optional<std::function<std::any(const SRecvData 
 
 	if (size < 0 || size == 0) {
 		recvData->good = false;
-		if (cb)
-			(*cb)(*recvData);
+		if (cb && !(*cb)(*recvData)) {
+			m_szReading.reset();
+			return nullptr;
+		}
 	} else {
 		recvData->data.resize(size);
 		recvData->good = true;
@@ -95,13 +97,13 @@ UP<SRecvData> Client::read(std::optional<std::function<std::any(const SRecvData 
 	return recvData;
 }
 
-UP<SRecvData> Client::read(const std::string &msg, std::optional<std::function<std::any(const SRecvData &)>> cb) {
+UP<SRecvData> Client::read(const std::string &msg, std::optional<std::function<bool(const SRecvData &)>> cb) {
 	write("{}", msg);
 	m_szReading = msg;
 	return read(cb);
 }
 
-void Client::runLoop(bool resumeHist, std::optional<std::function<std::any(const SRecvData &)>> cb) {
+void Client::runLoop(bool resumeHist, std::optional<std::function<bool(const SRecvData &)>> cb) {
 	if (resumeHist)
 		resumeHistory();
 
@@ -124,13 +126,13 @@ bool Client::isValid() {
 	return getsockopt(m_sockfd->get(), SOL_SOCKET, SO_ERROR, &err, &size) >= 0 && err == 0;
 }
 
-bool Client::write(const std::string &msg, std::optional<std::function<std::any(const SRecvData &)>> cb) {
-	const auto r = write("{}", msg);
+bool Client::write(const std::string &msg, std::optional<std::function<bool(const SRecvData &)>> cb) {
+	auto r = write("{}", msg);
 	if (cb) {
 		auto recvData  = std::make_unique<SRecvData>();
 		recvData->data = msg;
 		recvData->good = r;
-		(*cb)(*recvData);
+		r			   = (*cb)(*recvData);
 	}
 	return r;
 }
