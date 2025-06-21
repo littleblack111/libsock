@@ -37,9 +37,6 @@ Client::Client(SP<Server> server, SP<Clients> clients, bool track, bool oneShot)
 }
 
 Client::~Client() {
-#ifdef DEBUG
-	onDisconnect();
-#endif
 	m_sockfd.reset();
 }
 
@@ -58,17 +55,15 @@ void Client::recvLoop() {
 }
 
 bool SRecvData::isEmpty() const {
-	return data.empty() ||
-		   std::ranges::all_of(data, [](char c) { return std::isspace(c); });
+	return data.empty() || std::ranges::all_of(data, [](char c) { return std::isspace(c); });
 }
 
 void SRecvData::sanitize() {
 	if (!data.empty() && data.back() == '\n')
 		data.pop_back();
 
-	data.erase(std::remove(data.begin(), data.end(), asciiEscape),
-			   data.end()); // don't accept ASCII code, might mess up terminal
-							// // NOLINT
+	data.erase(std::remove(data.begin(), data.end(), asciiEscape), data.end()); // don't accept ASCII code, might mess up terminal
+																				// // NOLINT
 
 	if (const auto start = data.find_first_not_of(" \t\r\n");
 		start != std::string::npos) {
@@ -93,9 +88,6 @@ UP<SRecvData> Client::read(std::optional<std::function<std::any(const SRecvData 
 		recvData->good = true;
 	}
 
-#ifdef DEBUG
-	onRecv(*recvData);
-#endif
 	m_szReading.reset();
 	return recvData;
 }
@@ -121,9 +113,7 @@ bool Client::isValid() {
 
 	int		  err  = 0;
 	socklen_t size = sizeof(err);
-	return getsockopt(m_sockfd->get(), SOL_SOCKET, SO_ERROR, &err, &size) >=
-			   0 &&
-		   err == 0;
+	return getsockopt(m_sockfd->get(), SOL_SOCKET, SO_ERROR, &err, &size) >= 0 && err == 0;
 }
 
 bool Client::write(const std::string &msg, std::optional<std::function<std::any(const SRecvData &)>> cb) {

@@ -36,12 +36,10 @@ else()
   message(STATUS "Configuring libsock in Release")
 endif()
 
-# Separate source files and headers
 file(GLOB_RECURSE PRIVATE_SOURCES CONFIGURE_DEPENDS "src/*.cpp")
 file(GLOB_RECURSE PRIVATE_HEADERS CONFIGURE_DEPENDS "src/*.hpp")
 file(GLOB_RECURSE PUBLIC_HEADERS CONFIGURE_DEPENDS "include/*.hpp")
 
-# Create list of all source files (private sources + public headers)
 set(ALL_SOURCES ${PRIVATE_SOURCES} ${PUBLIC_HEADERS})
 
 find_package(PkgConfig REQUIRED)
@@ -51,7 +49,7 @@ target_include_directories(
   sock
   PUBLIC "./include"
   PRIVATE "./src"
-  PRIVATE "./src/misc")  # Add this so FileDescriptor.hpp can be found
+  PRIVATE "./src/misc")
 set_target_properties(sock PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION 1)
 
 # tests add_custom_target(tests)
@@ -68,8 +66,9 @@ set_target_properties(sock PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION 1)
 #
 # Installation
 install(TARGETS sock)
-install(DIRECTORY "include/libsock" 
-        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-        PATTERN "misc" EXCLUDE)
+install(
+  DIRECTORY "include/libsock"
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+  PATTERN "misc" EXCLUDE)
 install(FILES ${CMAKE_BINARY_DIR}/libsock.pc
         DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
