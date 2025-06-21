@@ -3,7 +3,6 @@
 #include "../types.hpp"
 #include "clients.hpp"
 #include "server.hpp"
-#include <any>
 #include <format>
 #include <functional>
 #include <netinet/in.h>
@@ -37,14 +36,14 @@ class Client {
 	const std::string &getIp() const;
 	bool			   isAdmin() const;
 
-	UP<SRecvData> read(std::optional<std::function<std::any(const SRecvData &)>> cb = std::nullopt);
-	UP<SRecvData> read(const std::string &msg, std::optional<std::function<std::any(const SRecvData &)>> cb = std::nullopt);
-	bool		  write(const std::string &msg, std::optional<std::function<std::any(const SRecvData &)>> cb = std::nullopt);
+	UP<SRecvData> read(std::optional<std::function<bool(const SRecvData &)>> cb = std::nullopt);
+	UP<SRecvData> read(const std::string &msg, std::optional<std::function<bool(const SRecvData &)>> cb = std::nullopt);
+	bool		  write(const std::string &msg, std::optional<std::function<bool(const SRecvData &)>> cb = std::nullopt);
 	template <typename... Args>
 	bool write(std::format_string<Args...> fmt, Args &&...args);
 
 	void resumeHistory();
-	void runLoop(bool resumeHistory = true, std::optional<std::function<std::any(const SRecvData &)>> cb = std::nullopt);
+	void runLoop(bool resumeHistory = true, std::optional<std::function<bool(const SRecvData &)>> cb = std::nullopt);
 
 	bool isValid();
 
@@ -62,7 +61,7 @@ class Client {
 
 	std::optional<std::string> m_szReading = std::nullopt;
 
-	void recvLoop(std::optional<std::function<std::any(const SRecvData &)>> cb = std::nullopt);
+	void recvLoop(std::optional<std::function<bool(const SRecvData &)>> cb = std::nullopt);
 
 	friend class Clients;
 };
