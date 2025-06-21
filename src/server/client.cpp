@@ -40,7 +40,7 @@ Client::~Client() {
 	m_sockfd.reset();
 }
 
-void Client::recvLoop() {
+void Client::recvLoop(std::optional<std::function<std::any(const SRecvData &)>> cb) {
 	while (true) {
 		auto recvData = read();
 		if (!recvData->good)
@@ -51,6 +51,9 @@ void Client::recvLoop() {
 			continue;
 
 		pClients->m_vDatas.push_back({recvData->data, self});
+
+		if (cb)
+			(*cb)(*recvData);
 	}
 }
 
@@ -98,13 +101,18 @@ UP<SRecvData> Client::read(const std::string &msg, std::optional<std::function<s
 	return read(cb);
 }
 
-void Client::run() {
-	for (const auto &chat : pClients->getDatas()) {
-		write(chat.msg);
-		recvLoop();
+void Client::runLoop(bool resumeHist, std::optional<std::function<std::any(const SRecvData &)>> cb) {
+	if (resumeHist)
+		resumeHistory();
 
-		pClients->kick(self);
-	}
+	recvLoop();
+
+	pClients->kick(self);
+}
+
+void Client::resumeHistory() {
+	for (const auto &chat : pClients->getDatas())
+		write(chat.msg);
 }
 
 bool Client::isValid() {
