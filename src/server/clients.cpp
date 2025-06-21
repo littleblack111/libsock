@@ -58,12 +58,10 @@ Clients::~Clients() {
 	}
 }
 
-WP<Client> Clients::newClient(SP<Server> server, std::optional<std::function<std::any(WP<Client>)>> cb) {
+WP<Client> Clients::newClient(std::function<std::any(const WP<Client> &)> loopFunc, SP<Server> server) {
 	SP	  client		  = SP<Client>(new Client(server, shared_from_this()));
-	auto &instance		  = m_vClients.emplace_back(std::jthread([&client]() { client->runLoop(); }), client);
+	auto &instance		  = m_vClients.emplace_back(std::jthread([&client, &loopFunc]() { loopFunc(client); }), client);
 	instance.second->self = std::weak_ptr<Client>(instance.second);
-	if (cb)
-		(*cb)(instance.second);
 	return instance.second;
 }
 
