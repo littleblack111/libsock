@@ -105,7 +105,7 @@ void Client::runLoop(bool resumeHist, std::optional<std::function<std::any(const
 	if (resumeHist)
 		resumeHistory();
 
-	recvLoop();
+	recvLoop(cb);
 
 	pClients->kick(self);
 }
