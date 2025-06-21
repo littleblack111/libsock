@@ -50,8 +50,6 @@ void Client::recvLoop(std::optional<std::function<bool(const SRecvData &)>> cb) 
 		if (recvData->isEmpty())
 			continue;
 
-		pClients->m_vDatas.push_back({recvData->data, self});
-
 		if (cb && !(*cb)(*recvData))
 			return;
 	}
@@ -91,6 +89,9 @@ UP<SRecvData> Client::read(std::optional<std::function<bool(const SRecvData &)>>
 		recvData->data.resize(size);
 		recvData->good = true;
 	}
+
+	if (m_track)
+		pClients->m_vDatas.push_back({recvData->data, self});
 
 	return recvData;
 }
