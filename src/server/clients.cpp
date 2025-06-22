@@ -55,7 +55,7 @@ Clients::~Clients() {
 	vpClients.erase(std::remove_if(vpClients.begin(), vpClients.end(), [this](const WP<Clients> &wptr) { return !wptr.owner_before(m_self) && !m_self.owner_before(wptr); }), vpClients.end());
 }
 
-std::pair<SP<Client>, std::future<void>> Clients::newClient(std::function<void(SP<Client> &)> cb, bool track, bool wait) {
+std::pair<SP<Client>, std::future<void>> Clients::newClient(bool track, bool wait, std::function<void(SP<Client> &)> cb) {
 	auto  promise  = std::make_shared<std::promise<void>>();
 	SP	  client   = SP<Client>(new Client(m_wpServer.lock(), shared_from_this(), track, wait));
 	auto &instance = m_vClients.emplace_back(std::jthread([client, cb, promise]() mutable {
