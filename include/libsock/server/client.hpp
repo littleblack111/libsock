@@ -48,6 +48,7 @@ class Client {
 	bool isValid();
 
   private:
+	void init();
 	Client(SP<Server> server, SP<Clients> clients, bool track = false, bool oneShot = true);
 
 	WP<Client>	m_self;

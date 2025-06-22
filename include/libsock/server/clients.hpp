@@ -24,7 +24,7 @@ class Clients : public std::enable_shared_from_this<Clients> {
 	static SP<Clients> create(WP<Server> server);
 	~Clients();
 
-	SP<Client> newClient(std::function<void(const WP<Client> &)> loopFunc = [](const WP<Client> &) { ; });
+	SP<Client> newClient();
 
 	void broadcast(const std::string &msg, std::optional<WP<Client>> self = std::nullopt); // second param only specified when we
 																						   // want to exclude the sender

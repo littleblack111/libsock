@@ -23,7 +23,9 @@ Client::Client(SP<Server> server, SP<Clients> clients, bool track, bool oneShot)
 		throw std::runtime_error("server:client: ClientManager doesn't exist");
 	if (m_wpServer.expired())
 		throw std::runtime_error("server:client: Server doesn't exist");
+}
 
+void Client::init() {
 	m_sockfd = std::make_shared<LibSock::CFileDescriptor>(accept(m_wpServer.lock()->getSocket()->get(), reinterpret_cast<sockaddr *>(&m_addr), &m_addrLen)); // if this is in the init list, it will run before
 																																							 // m_addrLen, so it won't work :/
 
