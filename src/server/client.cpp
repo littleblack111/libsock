@@ -13,9 +13,9 @@
 
 using namespace LibSock::Server;
 
-Client::Client(SP<Server> server, SP<Clients> clients, bool track, bool oneShot)
+Client::Client(SP<Server> server, SP<Clients> clients, bool track, bool wait)
 	: m_track(track)
-	, m_oneShot(oneShot) {
+	, m_wait(wait) {
 	m_wpServer	= std::move(server);
 	m_wpClients = std::move(clients);
 

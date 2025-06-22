@@ -49,7 +49,7 @@ class Client {
 
   private:
 	void init();
-	Client(SP<Server> server, SP<Clients> clients, bool track = false, bool oneShot = true);
+	Client(SP<Server> server, SP<Clients> clients, bool track = false, bool wait = false);
 
 	WP<Client>	m_self;
 	WP<Server>	m_wpServer;
@@ -61,7 +61,7 @@ class Client {
 	std::string					 m_ip;
 	int							 m_port;
 	bool						 m_track;
-	bool						 m_oneShot;
+	bool						 m_wait;
 
 	std::optional<std::string> m_szReading = std::nullopt;
 

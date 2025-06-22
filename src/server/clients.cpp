@@ -27,8 +27,7 @@ void Clients::shutdownClients(std::optional<std::function<bool(const std::vector
 	m_vClients.clear();
 }
 
-Clients::Clients(bool wait)
-	: m_wait(wait) {
+Clients::Clients() {
 	if (std::atexit([]() {
 			for (auto c : vpClients)
 				if (const auto p = c.lock())
@@ -37,8 +36,8 @@ Clients::Clients(bool wait)
 		void(); // failed to register exit handler...
 }
 
-SP<Clients> Clients::create(WP<Server> server, bool wait) {
-	auto c = SP<Clients>(new Clients(wait));
+SP<Clients> Clients::create(WP<Server> server) {
+	auto c = SP<Clients>(new Clients());
 	vpClients.emplace_back(c);
 	c->m_self	  = c;
 	c->m_wpServer = server;
@@ -54,14 +53,14 @@ WP<Clients> Clients::get() {
 Clients::~Clients() {
 	for (auto &[thread, client] : m_vClients) {
 		if (thread.joinable())
-			m_wait ? thread.join() : thread.detach();
+			client->m_wait ? thread.join() : thread.detach();
 		kick(WP<Client>(client));
 	}
 	vpClients.erase(std::remove_if(vpClients.begin(), vpClients.end(), [this](const WP<Clients> &wptr) { return !wptr.owner_before(m_self) && !m_self.owner_before(wptr); }), vpClients.end());
 }
 
-SP<Client> Clients::newClient(std::function<void(SP<Client> &)> cb) {
-	SP	  client			= SP<Client>(new Client(m_wpServer.lock(), shared_from_this()));
+SP<Client> Clients::newClient(std::function<void(SP<Client> &)> cb, bool track, bool wait) {
+	SP	  client			= SP<Client>(new Client(m_wpServer.lock(), shared_from_this(), track, wait));
 	auto &instance			= m_vClients.emplace_back(std::jthread([&client, &cb]() { client->init(); cb(client); }), client);
 	instance.second->m_self = std::weak_ptr<Client>(instance.second);
 	return client;
