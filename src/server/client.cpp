@@ -93,7 +93,7 @@ UP<SRecvData> Client::read(std::optional<std::function<bool(const SRecvData &)>>
 	}
 
 	if (m_track)
-		m_wpClients.lock()->m_vDatas.push_back({recvData->data, m_self});
+		m_wpClients.lock()->m_vDatas.emplace_back(SData{recvData->data, m_self});
 
 	return recvData;
 }

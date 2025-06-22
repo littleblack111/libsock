@@ -78,7 +78,7 @@ void Clients::broadcast(const SData &msg) {
 		client->write(msg.msg);
 	}
 
-	m_vDatas.push_back(msg);
+	m_vDatas.emplace_back(msg);
 }
 
 SP<Client> Clients::getByIp(const std::string &ip) const {
