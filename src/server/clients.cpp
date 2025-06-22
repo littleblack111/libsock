@@ -56,15 +56,15 @@ Clients::~Clients() {
 }
 
 std::pair<SP<Client>, std::future<void>> Clients::newClient(std::function<void(SP<Client> &)> cb, bool track, bool wait) {
-	auto  promise			= std::make_shared<std::promise<void>>();
-	SP	  client			= SP<Client>(new Client(m_wpServer.lock(), shared_from_this(), track, wait));
-	auto &instance			= m_vClients.emplace_back(std::jthread([client, cb, promise]() mutable {
-												  client->init();
-												  promise->set_value();
-												  cb(client);
-											  }),
-													  client);
-	instance.second->m_self = std::weak_ptr<Client>(instance.second);
+	auto  promise  = std::make_shared<std::promise<void>>();
+	SP	  client   = SP<Client>(new Client(m_wpServer.lock(), shared_from_this(), track, wait));
+	auto &instance = m_vClients.emplace_back(std::jthread([client, cb, promise]() mutable {
+												 client->init();
+												 promise->set_value();
+												 cb(client);
+											 }),
+											 client);
+	client->m_self = std::weak_ptr<Client>(instance.second);
 	return {client, promise->get_future()};
 }
 
