@@ -119,6 +119,9 @@ void Client::resumeHistory() {
 }
 
 bool Client::isValid() {
+	if (!m_sockfd)
+		return false;
+
 	if (!m_sockfd->isValid())
 		return false;
 
