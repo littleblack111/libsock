@@ -21,7 +21,7 @@ struct SData {
 
 class Clients : public std::enable_shared_from_this<Clients> {
   public:
-	static SP<Clients> create(WP<Server> server);
+	static SP<Clients> create(WP<Server> server, bool wait = false);
 	~Clients();
 
 	SP<Client> newClient(std::function<void(SP<Client> &)> cb = [](SP<Client>) {});
@@ -38,11 +38,13 @@ class Clients : public std::enable_shared_from_this<Clients> {
 	std::vector<SData>		getDatas() const;
 
   private:
-	Clients();
+	Clients(bool wait = false);
+
 	void broadcast(const SData &msg);
 
 	std::vector<std::pair<std::jthread, SP<Client>>> m_vClients;
 	std::vector<SData>								 m_vDatas;
+	bool											 m_wait;
 
 	WP<Clients> get();
 

@@ -27,7 +27,8 @@ void Clients::shutdownClients(std::optional<std::function<bool(const std::vector
 	m_vClients.clear();
 }
 
-Clients::Clients() {
+Clients::Clients(bool wait)
+	: m_wait(wait) {
 	if (std::atexit([]() {
 			for (auto c : vpClients)
 				if (const auto p = c.lock())
@@ -36,8 +37,8 @@ Clients::Clients() {
 		void(); // failed to register exit handler...
 }
 
-SP<Clients> Clients::create(WP<Server> server) {
-	auto c = SP<Clients>(new Clients());
+SP<Clients> Clients::create(WP<Server> server, bool wait) {
+	auto c = SP<Clients>(new Clients(wait));
 	vpClients.emplace_back(c);
 	c->m_self	  = c;
 	c->m_wpServer = server;
@@ -53,7 +54,7 @@ WP<Clients> Clients::get() {
 Clients::~Clients() {
 	for (auto &[thread, client] : m_vClients) {
 		if (thread.joinable())
-			thread.detach();
+			m_wait ? thread.join() : thread.detach();
 		kick(WP<Client>(client));
 	}
 	vpClients.erase(std::remove_if(vpClients.begin(), vpClients.end(), [this](const WP<Clients> &wptr) { return !wptr.owner_before(m_self) && !m_self.owner_before(wptr); }), vpClients.end());
