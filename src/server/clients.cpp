@@ -92,7 +92,7 @@ std::vector<SData> Clients::getDatas() const {
 	return m_vDatas;
 }
 
-void Clients::kick(WP<Client> clientWeak, const bool kill, const std::string &reason, std::optional<std::function<bool(const std::vector<std::pair<std::jthread, SP<Client>>>::iterator &)>> cb) {
+void Clients::kick(WP<Client> clientWeak, const bool kill, std::optional<std::function<bool(const std::vector<std::pair<std::jthread, SP<Client>>>::iterator &)>> cb) {
 	auto client = clientWeak.lock();
 	if (!client)
 		return;
@@ -104,9 +104,6 @@ void Clients::kick(WP<Client> clientWeak, const bool kill, const std::string &re
 				// not sure why the second is null
 				if (cb && !(*cb)(it))
 					return;
-
-			if (!reason.empty())
-				client->write(reason);
 
 			const auto native_handle = it->first.native_handle();
 			if (it->first.joinable())

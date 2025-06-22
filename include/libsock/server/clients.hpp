@@ -29,7 +29,7 @@ class Clients : public std::enable_shared_from_this<Clients> {
 
 	void broadcast(const SData &msg); // second param only specified when we
 									  // want to exclude the sender
-	void kick(WP<Client> client, const bool kill = false, const std::string &reason = "", std::optional<std::function<bool(const std::vector<std::pair<std::jthread, SP<Client>>>::iterator &)>> cb = std::nullopt);
+	void kick(WP<Client> client, const bool kill = false, std::optional<std::function<bool(const std::vector<std::pair<std::jthread, SP<Client>>>::iterator &)>> cb = std::nullopt);
 	void addClient(const Client &client);
 
 	void shutdownClients(std::optional<std::function<bool(const std::vector<std::pair<std::jthread, SP<Client>>> &)>> cb = std::nullopt);
