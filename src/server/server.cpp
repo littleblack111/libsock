@@ -21,10 +21,10 @@ Server::Server(uint16_t port, bool reuseaddr, bool keepalive)
 
 	constexpr int opt  = 1;
 	constexpr int size = sizeof(opt);
-	if (keepalive && setsockopt(m_sockfd->get(), SOL_SOCKET, SO_REUSEADDR, &opt, size) < 0)
+	if (reuseaddr && setsockopt(m_sockfd->get(), SOL_SOCKET, SO_REUSEADDR, &opt, size) < 0)
 		throw std::runtime_error("server:server setsockopt(SO_REUSEADDR) failed");
 
-	if (reuseaddr && setsockopt(m_sockfd->get(), SOL_SOCKET, SO_KEEPALIVE, &opt, size) < 0)
+	if (keepalive && setsockopt(m_sockfd->get(), SOL_SOCKET, SO_KEEPALIVE, &opt, size) < 0)
 		throw std::runtime_error("server:server setsockopt(SO_KEEPALIVE) failed");
 
 	memset(&m_addr, 0, sizeof(m_addr));
