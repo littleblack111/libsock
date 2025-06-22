@@ -1,4 +1,5 @@
 #include "FileDescriptor.hpp"
+#include <cassert>
 #include <cstdlib>
 #include <fcntl.h>
 #include <sys/poll.h>
@@ -31,6 +32,7 @@ bool CFileDescriptor::isValid() const {
 }
 
 int CFileDescriptor::get() const {
+	assert(m_fd && isValid());
 	return m_fd;
 }
 

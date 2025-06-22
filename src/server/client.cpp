@@ -77,6 +77,11 @@ void SRecvData::sanitize() {
 }
 
 UP<SRecvData> Client::read(std::optional<std::function<bool(const SRecvData &)>> cb) {
+	if (!m_sockfd || !m_sockfd->isValid()) {
+		if (cb)
+			(*cb)({.data = "", .size = 0, .good = false});
+		return nullptr;
+	}
 	auto recvData = std::make_unique<SRecvData>();
 
 	recvData->data.resize(recvData->size);
@@ -142,6 +147,9 @@ const std::string &Client::getIp() const { return m_ip; }
 
 template <typename... Args>
 bool Client::write(std::format_string<Args...> fmt, Args &&...args) {
+	if (!m_sockfd || !m_sockfd->isValid())
+		return false;
+
 	std::string msg = std::format(fmt, std::forward<Args>(args)...);
 	if (m_szReading) {
 		msg.insert(0, "\r");
