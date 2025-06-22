@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <functional>
 #include <future>
+#include <iostream>
 #include <ranges>
 #include <unistd.h>
 #include <utility>
@@ -21,8 +22,8 @@ void Clients::shutdownClients(std::optional<std::function<bool(const std::vector
 
 	for (auto &[thread, client] : m_vClients) {
 		if (thread.joinable())
-			thread.detach();
-		client.reset();
+			client->m_wait ? thread.join() : thread.detach();
+		kick(WP<Client>(client), true);
 	}
 
 	m_vClients.clear();
@@ -52,11 +53,7 @@ WP<Clients> Clients::get() {
 }
 
 Clients::~Clients() {
-	for (auto &[thread, client] : m_vClients) {
-		if (thread.joinable())
-			client->m_wait ? thread.join() : thread.detach();
-		kick(WP<Client>(client));
-	}
+	shutdownClients();
 	vpClients.erase(std::remove_if(vpClients.begin(), vpClients.end(), [this](const WP<Clients> &wptr) { return !wptr.owner_before(m_self) && !m_self.owner_before(wptr); }), vpClients.end());
 }
 
