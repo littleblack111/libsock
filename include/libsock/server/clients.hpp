@@ -25,7 +25,7 @@ class Clients : public std::enable_shared_from_this<Clients> {
 	static SP<Clients> create(WP<Server> server);
 	~Clients();
 
-	std::future<SP<Client>> newClient(std::function<void(SP<Client> &)> cb = [](SP<Client>) {}, bool track = true, bool wait = false);
+	SP<Client> newClient(std::function<void(SP<Client> &)> cb = [](SP<Client>) {}, bool track = true, bool wait = false);
 
 	void broadcast(const SData &msg); // second param only specified when we
 									  // want to exclude the sender

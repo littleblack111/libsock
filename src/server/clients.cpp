@@ -2,8 +2,6 @@
 #include "libsock/server/client.hpp"
 #include <algorithm>
 #include <functional>
-#include <future>
-#include <iostream>
 #include <ranges>
 #include <unistd.h>
 #include <utility>
@@ -57,17 +55,11 @@ Clients::~Clients() {
 	vpClients.erase(std::remove_if(vpClients.begin(), vpClients.end(), [this](const WP<Clients> &wptr) { return !wptr.owner_before(m_self) && !m_self.owner_before(wptr); }), vpClients.end());
 }
 
-std::future<SP<Client>> Clients::newClient(std::function<void(SP<Client> &)> cb, bool track, bool wait) {
-	auto  promise			= std::make_shared<std::promise<SP<Client>>>();
+SP<Client> Clients::newClient(std::function<void(SP<Client> &)> cb, bool track, bool wait) {
 	SP	  client			= SP<Client>(new Client(m_wpServer.lock(), shared_from_this(), track, wait));
-	auto &instance			= m_vClients.emplace_back(std::jthread([client, cb, promise]() mutable {
-												  client->init();
-												  promise->set_value(client);
-												  cb(client);
-											  }),
-													  client);
+	auto &instance			= m_vClients.emplace_back(std::jthread([&client, &cb]() { client->init(); cb(client); }), client);
 	instance.second->m_self = std::weak_ptr<Client>(instance.second);
-	return promise->get_future();
+	return client;
 }
 
 void Clients::broadcast(const SData &msg) {
