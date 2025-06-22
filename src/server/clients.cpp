@@ -19,9 +19,9 @@ void Clients::shutdownClients(std::optional<std::function<bool(const std::vector
 		return;
 
 	for (auto &[thread, client] : m_vClients) {
+		kick(WP<Client>(client));
 		if (thread.joinable())
 			client->m_wait ? thread.join() : thread.detach();
-		kick(WP<Client>(client), true);
 	}
 
 	m_vClients.clear();
@@ -110,7 +110,7 @@ void Clients::kick(WP<Client> clientWeak, const bool kill, const std::string &re
 
 			const auto native_handle = it->first.native_handle();
 			if (it->first.joinable())
-				it->first.detach(); // .detach the thread since it's removing itself
+				it->second->m_wait ? it->first.join() : it->first.detach();
 			it->second.reset();
 			m_vClients.erase(it);
 			if (kill && native_handle != 0)
