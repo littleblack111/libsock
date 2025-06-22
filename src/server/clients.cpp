@@ -1,6 +1,7 @@
 #include "libsock/server/clients.hpp"
 #include "libsock/server/client.hpp"
 #include <algorithm>
+#include <functional>
 #include <ranges>
 #include <unistd.h>
 #include <utility>
@@ -58,9 +59,9 @@ Clients::~Clients() {
 	vpClients.erase(std::remove_if(vpClients.begin(), vpClients.end(), [this](const WP<Clients> &wptr) { return !wptr.owner_before(m_self) && !m_self.owner_before(wptr); }), vpClients.end());
 }
 
-SP<Client> Clients::newClient() {
+SP<Client> Clients::newClient(std::function<void(SP<Client> &)> cb) {
 	SP	  client			= SP<Client>(new Client(m_wpServer.lock(), shared_from_this()));
-	auto &instance			= m_vClients.emplace_back(std::jthread([&client]() { client->init(); }), client);
+	auto &instance			= m_vClients.emplace_back(std::jthread([&client, &cb]() { client->init(); cb(client); }), client);
 	instance.second->m_self = std::weak_ptr<Client>(instance.second);
 	return client;
 }
