@@ -48,9 +48,12 @@ class Client {
 	bool isValid();
 
   private:
-	Client(SP<Server> server = pServer, SP<Clients> clients = pClients, bool track = false, bool oneShot = true);
+	Client(SP<Server> server, SP<Clients> clients, bool track = false, bool oneShot = true);
 
-	WP<Client>					 self;
+	WP<Client>	m_self;
+	WP<Server>	m_wpServer;
+	WP<Clients> m_wpClients;
+
 	SP<LibSock::CFileDescriptor> m_sockfd;
 	sockaddr_in					 m_addr;
 	socklen_t					 m_addrLen = sizeof(m_addr);

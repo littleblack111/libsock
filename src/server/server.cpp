@@ -1,6 +1,7 @@
 #include "libsock/server/server.hpp"
 #include "libsock/types.hpp"
 #include "misc/FileDescriptor.hpp"
+#include <algorithm>
 #include <cstring>
 #include <mutex>
 #include <stdexcept>
@@ -14,8 +15,6 @@ namespace Server {
 Server::Server(uint16_t port, bool reuseaddr, bool keepalive)
 	: m_sockfd(std::make_shared<LibSock::CFileDescriptor>(socket(AF_INET, SOCK_STREAM, 0)))
 	, m_port(port) {
-	if (pServer)
-		throw std::runtime_error("server:server Server already exist");
 	std::lock_guard<std::mutex> lk(m_mutex);
 	if (!m_sockfd->isValid() || m_sockfd->get() < 0)
 		throw std::runtime_error("server:server Failed to create socket");
@@ -37,20 +36,22 @@ Server::Server(uint16_t port, bool reuseaddr, bool keepalive)
 }
 
 SP<Server> Server::create(uint16_t port, bool reuseaddr, bool keepalive) {
-	if (pServer)
-		throw std::runtime_error("server:server Server already exist");
-	pServer = SP<Server>(new Server(port, reuseaddr, keepalive));
-	return pServer;
+	auto c = SP<Server>(new Server(port, reuseaddr, keepalive));
+	vpServer.emplace_back(c);
+	c->m_self = c;
+	return c;
 }
 
-SP<Server> Server::get() {
-	if (!pServer)
-		pServer = shared_from_this();
-	return pServer;
+WP<Server> Server::get() {
+	std::lock_guard<std::mutex> lk(m_mutex);
+	if (m_self.expired())
+		m_self = shared_from_this();
+	return m_self;
 }
 
 Server::~Server() {
 	m_sockfd.reset();
+	vpServer.erase(std::remove_if(vpServer.begin(), vpServer.end(), [this](const SP<Server> &sptr) { return sptr.get() == this; }), vpServer.end());
 }
 
 SP<LibSock::CFileDescriptor> Server::getSocket() const {

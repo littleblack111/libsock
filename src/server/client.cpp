@@ -16,16 +16,16 @@ using namespace LibSock::Server;
 Client::Client(SP<Server> server, SP<Clients> clients, bool track, bool oneShot)
 	: m_track(track)
 	, m_oneShot(oneShot) {
-	pServer	 = std::move(server);
-	pClients = std::move(clients);
+	m_wpServer	= std::move(server);
+	m_wpClients = std::move(clients);
 
-	if (!pClients)
+	if (m_wpClients.expired())
 		throw std::runtime_error("server:client: ClientManager doesn't exist");
-	if (!pServer)
+	if (m_wpServer.expired())
 		throw std::runtime_error("server:client: Server doesn't exist");
 
-	m_sockfd = std::make_shared<LibSock::CFileDescriptor>(accept(pServer->getSocket()->get(), reinterpret_cast<sockaddr *>(&m_addr), &m_addrLen)); // if this is in the init list, it will run before
-																																				   // m_addrLen, so it won't work :/
+	m_sockfd = std::make_shared<LibSock::CFileDescriptor>(accept(m_wpServer.lock()->getSocket()->get(), reinterpret_cast<sockaddr *>(&m_addr), &m_addrLen)); // if this is in the init list, it will run before
+																																							 // m_addrLen, so it won't work :/
 
 	if (!m_sockfd->isValid())
 		throw std::runtime_error("server:client: Failed to create socket");
@@ -91,7 +91,7 @@ UP<SRecvData> Client::read(std::optional<std::function<bool(const SRecvData &)>>
 	}
 
 	if (m_track)
-		pClients->m_vDatas.push_back({recvData->data, self});
+		m_wpClients.lock()->m_vDatas.push_back({recvData->data, m_self});
 
 	return recvData;
 }
@@ -108,11 +108,11 @@ void Client::runLoop(bool resumeHist, std::optional<std::function<bool(const SRe
 
 	recvLoop(cb);
 
-	pClients->kick(self);
+	m_wpClients.lock()->kick(m_self);
 }
 
 void Client::resumeHistory() {
-	for (const auto &chat : pClients->getDatas())
+	for (const auto &chat : m_wpClients.lock()->getDatas())
 		write(chat.msg);
 }
 

@@ -21,10 +21,10 @@ struct SData {
 
 class Clients : public std::enable_shared_from_this<Clients> {
   public:
-	static SP<Clients> create();
+	static SP<Clients> create(WP<Server> server);
 	~Clients();
 
-	WP<Client> newClient(std::function<void(const WP<Client> &)> loopFunc = [](const WP<Client> &) { ; }, SP<Server> server = pServer);
+	SP<Client> newClient(std::function<void(const WP<Client> &)> loopFunc = [](const WP<Client> &) { ; });
 
 	void broadcast(const std::string &msg, std::optional<WP<Client>> self = std::nullopt); // second param only specified when we
 																						   // want to exclude the sender
@@ -44,10 +44,13 @@ class Clients : public std::enable_shared_from_this<Clients> {
 	std::vector<std::pair<std::jthread, SP<Client>>> m_vClients;
 	std::vector<SData>								 m_vDatas;
 
-	SP<Clients> get();
+	WP<Clients> get();
+
+	WP<Clients> m_self;
+	WP<Server>	m_wpServer;
 
 	friend class Client;
 };
-inline SP<Clients> pClients;
+inline std::vector<WP<Clients>> vpClients;
 } // namespace Server
 } // namespace LibSock
