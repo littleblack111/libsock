@@ -3,11 +3,11 @@
 #include "../types.hpp"
 #include "server.hpp"
 #include <functional>
+#include <future>
 #include <memory>
 #include <optional>
 #include <string>
 #include <thread>
-#include <future>
 #include <vector>
 
 namespace LibSock {
@@ -27,8 +27,8 @@ class Clients : public std::enable_shared_from_this<Clients> {
 
 	std::future<SP<Client>> newClient(std::function<void(SP<Client> &)> cb = [](SP<Client>) {}, bool track = true, bool wait = false);
 
-	void broadcast(const std::string &msg, std::optional<WP<Client>> self = std::nullopt); // second param only specified when we
-																						   // want to exclude the sender
+	void broadcast(const SData &msg); // second param only specified when we
+									  // want to exclude the sender
 	void kick(WP<Client> client, const bool kill = false, const std::string &reason = "", std::optional<std::function<bool(const std::vector<std::pair<std::jthread, SP<Client>>>::iterator &)>> cb = std::nullopt);
 	void addClient(const Client &client);
 
@@ -40,7 +40,6 @@ class Clients : public std::enable_shared_from_this<Clients> {
 
   private:
 	Clients();
-	void broadcast(const SData &msg);
 
 	std::vector<std::pair<std::jthread, SP<Client>>> m_vClients;
 	std::vector<SData>								 m_vDatas;

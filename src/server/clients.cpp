@@ -73,10 +73,6 @@ std::future<SP<Client>> Clients::newClient(std::function<void(SP<Client> &)> cb,
 	return promise->get_future();
 }
 
-void Clients::broadcast(const std::string &msg, std::optional<std::weak_ptr<Client>> self) {
-	broadcast(SData{msg, self});
-}
-
 void Clients::broadcast(const SData &msg) {
 	for (const auto &[thread, client] : m_vClients) {
 		if (!client)
