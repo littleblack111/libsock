@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.19)
+cmake_minimum_required(VERSION 4.0.3)
 
 project(
   sock
@@ -16,7 +16,7 @@ set(LIBDIR ${CMAKE_INSTALL_FULL_LIBDIR})
 
 configure_file(libsock.pc.in libsock.pc @ONLY)
 
-set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD 26)
 add_compile_options(
   -Wall
   -Wextra
