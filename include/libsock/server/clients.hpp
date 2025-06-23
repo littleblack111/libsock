@@ -3,6 +3,7 @@
 #include "../types.hpp"
 #include "server.hpp"
 #include <functional>
+#include <future>
 #include <memory>
 #include <optional>
 #include <string>
@@ -24,7 +25,7 @@ class Clients : public std::enable_shared_from_this<Clients> {
 	static SP<Clients> create(WP<Server> server);
 	~Clients();
 
-	std::pair<SP<Client>, std::function<void()>> newClient(bool track = true, bool wait = false, std::function<void(SP<Client> &)> cb = [](SP<Client>) {});
+	std::pair<SP<Client>, std::future<void>> newClient(bool track = true, bool wait = false, std::function<void(SP<Client> &)> cb = [](SP<Client>) {});
 
 	void broadcast(const SData &msg); // second param only specified when we
 									  // want to exclude the sender
