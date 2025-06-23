@@ -64,7 +64,7 @@ std::pair<SP<Client>, std::future<void>> Clients::newClient(bool track, bool wai
 												 cb(client);
 											 }),
 											 client);
-	client->m_self = std::weak_ptr<Client>(instance.second);
+	client->m_self = WP<Client>(instance.second);
 	return {client, promise->get_future()};
 }
 
