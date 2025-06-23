@@ -69,6 +69,6 @@ install(TARGETS sock)
 install(
   DIRECTORY "include/libsock"
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-  PATTERN "misc" EXCLUDE)
+  PATTERN "src/misc" EXCLUDE)
 install(FILES ${CMAKE_BINARY_DIR}/libsock.pc
         DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
