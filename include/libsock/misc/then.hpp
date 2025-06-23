@@ -29,12 +29,12 @@ Then<Func> then(Func f) {
 }
 
 template <typename T, typename Func>
-auto operator|(std::future<T> fut, Then<Func> thenObj) -> std::future<std::invoke_result_t<Func, T>> {
+auto operator|(std::future<T> &fut, Then<Func> thenObj) -> std::future<std::invoke_result_t<Func, T>> {
 	return then(std::move(fut), std::move(thenObj.func));
 }
 
 template <typename Func>
-auto operator|(std::future<void> fut, Then<Func> thenObj) -> std::future<std::invoke_result_t<Func>> {
+auto operator|(std::future<void> &fut, Then<Func> thenObj) -> std::future<std::invoke_result_t<Func>> {
 	return then(std::move(fut), std::move(thenObj.func));
 }
 } // namespace LibSock
