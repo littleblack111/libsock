@@ -8,8 +8,7 @@
 
 using namespace LibSock;
 
-template <typename T>
-void ClientManager<T>::shutdownClientManager(std::optional<std::function<bool(const std::vector<std::pair<std::jthread, SP<Client<T>>>> &)>> cb) {
+void ClientManager::shutdownClientManager(std::optional<std::function<bool(const std::vector<std::pair<std::jthread, SP<Client>>> &)>> cb) {
 	if (m_vClientManager.empty())
 		return;
 
@@ -17,7 +16,7 @@ void ClientManager<T>::shutdownClientManager(std::optional<std::function<bool(co
 		return;
 
 	for (auto &[thread, client] : m_vClientManager) {
-		kick(WP<Client<T>>(client));
+		kick(WP<Client>(client));
 		if (thread.joinable())
 			client->m_wait ? thread.join() : thread.detach();
 	}
@@ -25,42 +24,37 @@ void ClientManager<T>::shutdownClientManager(std::optional<std::function<bool(co
 	m_vClientManager.clear();
 }
 
-template <typename T>
-SP<ClientManager<T>> ClientManager<T>::make(WP<Abstract::IServer<T>> server) {
+SP<ClientManager> ClientManager::make(WP<Abstract::IServer> server) {
 	auto c		  = SP<ClientManager>(new ClientManager());
 	c->m_self	  = c;
 	c->m_wpServer = server;
 	return c;
 }
 
-template <typename T>
-WP<ClientManager<T>> ClientManager<T>::get() {
+WP<ClientManager> ClientManager::get() {
 	if (m_self.expired())
-		m_self = this->shared_from_this();
+		m_self = shared_from_this();
 	return m_self;
 }
 
-template <typename T>
-ClientManager<T>::~ClientManager() {
+ClientManager::~ClientManager() {
 	shutdownClientManager();
 }
 
-template <typename T>
-std::pair<SP<Client<T>>, std::future<void>> ClientManager<T>::createClient(bool track, bool wait, std::function<void(SP<Client<T>> &)> cb) {
+std::pair<SP<Client>, std::future<void>> ClientManager::createClient(bool track, bool wait, std::function<void(SP<Client> &)> cb) {
 	auto promise = std::make_shared<std::promise<void>>();
-	SP	 client	 = SP<Client<T>>(new Client(m_wpServer.lock(), this->shared_from_this(), track, wait));
+	SP	 client	 = SP<Client>(new Client(m_wpServer.lock(), shared_from_this(), track, wait));
 	m_vClientManager.emplace_back(std::jthread([client, cb, promise]() mutable {
 									  client->init();
 									  promise->set_value();
 									  cb(client);
 								  }),
 								  client);
-	client->m_self = WP<Client<T>>(client);
+	client->m_self = WP<Client>(client);
 	return {client, promise->get_future()};
 }
 
-template <typename T>
-void ClientManager<T>::broadcast(const SData<T> &msg) {
+void ClientManager::broadcast(const SData &msg) {
 	for (const auto &[thread, client] : m_vClientManager) {
 		if (!client)
 			continue;
@@ -71,24 +65,20 @@ void ClientManager<T>::broadcast(const SData<T> &msg) {
 	m_vDatas.emplace_back(msg);
 }
 
-template <typename T>
-SP<Client<T>> ClientManager<T>::getByIp(const std::string &ip) const {
+SP<Client> ClientManager::getByIp(const std::string &ip) const {
 	auto it = std::ranges::find_if(m_vClientManager, [&ip](const auto &s) { return s.second->getIp() == ip; });
 	return it != m_vClientManager.end() ? it->second : nullptr;
 }
 
-template <typename T>
-std::vector<SP<Client<T>>> ClientManager<T>::getClientManager() const {
+std::vector<SP<Client>> ClientManager::getClientManager() const {
 	return m_vClientManager | std::views::transform([](const auto &s) { return s.second; }) | std::ranges::to<std::vector>();
 }
 
-template <typename T>
-std::vector<SData<T>> ClientManager<T>::getDatas() const {
+std::vector<SData> ClientManager::getDatas() const {
 	return m_vDatas;
 }
 
-template <typename T>
-void ClientManager<T>::kick(WP<Client<T>> clientWeak, const bool kill, std::optional<std::function<bool(const typename std::vector<std::pair<std::jthread, SP<Client<T>>>>::iterator &)>> cb) {
+void ClientManager::kick(WP<Client> clientWeak, const bool kill, std::optional<std::function<bool(const std::vector<std::pair<std::jthread, SP<Client>>>::iterator &)>> cb) {
 	auto client = clientWeak.lock();
 	if (!client)
 		return;

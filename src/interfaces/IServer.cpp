@@ -8,8 +8,7 @@
 
 using namespace LibSock::Abstract;
 
-template <typename Derived>
-IServer<Derived>::IServer(uint16_t port, bool reuseaddr, bool keepalive)
+IServer::IServer(uint16_t port, bool reuseaddr, bool keepalive)
 	: m_sockfd(std::make_shared<LibSock::CFileDescriptor>(socket(AF_INET, SOCK_STREAM, 0)))
 	, m_port(port) {
 	std::lock_guard<std::mutex> lk(m_mutex);
@@ -30,27 +29,23 @@ IServer<Derived>::IServer(uint16_t port, bool reuseaddr, bool keepalive)
 	m_addr.sin_addr.s_addr = INADDR_ANY;
 }
 
-template <typename Derived>
-SP<Derived> IServer<Derived>::make(uint16_t port, bool reuseaddr, bool keepalive) {
-	auto c	  = SP<IServer>(new Derived(port, reuseaddr, keepalive));
+SP<IServer> IServer::make(uint16_t port, bool reuseaddr, bool keepalive) {
+	auto c	  = SP<IServer>(new IServer(port, reuseaddr, keepalive));
 	c->m_self = c;
 	return c;
 }
 
-template <typename Derived>
-WP<Derived> IServer<Derived>::get() {
+WP<IServer> IServer::get() {
 	std::lock_guard<std::mutex> lk(m_mutex);
 	if (m_self.expired())
-		m_self = std::enable_shared_from_this<Derived>::shared_from_this();
+		m_self = shared_from_this();
 	return m_self;
 }
 
-template <typename Derived>
-IServer<Derived>::~IServer() {
+IServer::~IServer() {
 	m_sockfd.reset();
 }
 
-template <typename Derived>
-SP<LibSock::CFileDescriptor> IServer<Derived>::getSocket() const {
+SP<LibSock::CFileDescriptor> IServer::getSocket() const {
 	return m_sockfd;
 }

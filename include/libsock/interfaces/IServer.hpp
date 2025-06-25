@@ -7,10 +7,9 @@
 #include <optional>
 
 namespace LibSock::Abstract {
-template <typename Derived>
-class IServer : public std::enable_shared_from_this<Derived> {
+class IServer : public std::enable_shared_from_this<IServer> {
   public:
-	static SP<Derived> make(uint16_t port, bool reuseaddr = true, bool keepalive = false);
+	static SP<IServer> make(uint16_t port, bool reuseaddr = true, bool keepalive = false);
 	virtual ~IServer();
 	SP<LibSock::CFileDescriptor> getSocket() const;
 
@@ -21,9 +20,9 @@ class IServer : public std::enable_shared_from_this<Derived> {
 	sockaddr_in					 m_addr;
 	uint16_t					 m_port;
 
-	WP<Derived> get();
+	WP<IServer> get();
 
-	WP<Derived> m_self;
+	WP<IServer> m_self;
 
 	mutable std::mutex m_mutex;
 };

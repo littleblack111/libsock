@@ -13,8 +13,7 @@
 
 using namespace LibSock;
 
-template <typename T>
-Client<T>::Client(SP<Abstract::IServer<T>> server, SP<ClientManager<T>> clients, bool track, bool wait)
+Client::Client(SP<Abstract::IServer> server, SP<ClientManager> clients, bool track, bool wait)
 	: m_track(track)
 	, m_wait(wait) {
 	m_wpServer		  = std::move(server);
@@ -26,8 +25,7 @@ Client<T>::Client(SP<Abstract::IServer<T>> server, SP<ClientManager<T>> clients,
 		throw std::runtime_error("server:client: Server doesn't exist");
 }
 
-template <typename T>
-void Client<T>::init() {
+void Client::init() {
 	m_sockfd = std::make_shared<LibSock::CFileDescriptor>(accept(m_wpServer.lock()->getSocket()->get(), reinterpret_cast<sockaddr *>(&m_addr), &m_addrLen)); // if this is in the init list, it will run before
 																																							 // m_addrLen, so it won't work :/
 
@@ -40,13 +38,11 @@ void Client<T>::init() {
 	m_port = ntohs(m_addr.sin_port);
 }
 
-template <typename T>
-Client<T>::~Client() {
+Client::~Client() {
 	m_sockfd.reset();
 }
 
-template <typename T>
-void Client<T>::recvLoop(std::optional<std::function<bool(const SRecvData &)>> cb) {
+void Client::recvLoop(std::optional<std::function<bool(const SRecvData &)>> cb) {
 	while (true) {
 		auto recvData = read();
 		if (!recvData->good)
@@ -80,8 +76,7 @@ void SRecvData::sanitize() {
 		data.clear();
 }
 
-template <typename T>
-UP<SRecvData> Client<T>::read(std::optional<std::function<bool(const SRecvData &)>> cb) {
+UP<SRecvData> Client::read(std::optional<std::function<bool(const SRecvData &)>> cb) {
 	if (!m_sockfd || !m_sockfd->isValid()) {
 		if (cb)
 			(*cb)({.data = "", .size = 0, .good = false});
@@ -108,15 +103,13 @@ UP<SRecvData> Client<T>::read(std::optional<std::function<bool(const SRecvData &
 	return recvData;
 }
 
-template <typename T>
-UP<SRecvData> Client<T>::read(const std::string &msg, std::optional<std::function<bool(const SRecvData &)>> cb) {
+UP<SRecvData> Client::read(const std::string &msg, std::optional<std::function<bool(const SRecvData &)>> cb) {
 	write("{}", msg);
 	m_szReading = msg;
 	return read(cb);
 }
 
-template <typename T>
-void Client<T>::runLoop(bool resumeHist, std::optional<std::function<bool(const SRecvData &)>> cb) {
+void Client::runLoop(bool resumeHist, std::optional<std::function<bool(const SRecvData &)>> cb) {
 	if (resumeHist)
 		resumeHistory();
 
@@ -125,14 +118,12 @@ void Client<T>::runLoop(bool resumeHist, std::optional<std::function<bool(const 
 	m_wpClientManager.lock()->kick(m_self);
 }
 
-template <typename T>
-void Client<T>::resumeHistory() {
+void Client::resumeHistory() {
 	for (const auto &chat : m_wpClientManager.lock()->getDatas())
 		write(chat.msg);
 }
 
-template <typename T>
-bool Client<T>::isValid() {
+bool Client::isValid() {
 	if (!m_sockfd)
 		return false;
 
@@ -144,11 +135,22 @@ bool Client<T>::isValid() {
 	return getsockopt(m_sockfd->get(), SOL_SOCKET, SO_ERROR, &err, &size) >= 0 && err == 0;
 }
 
-template <typename T>
-bool Client<T>::write(std::string msg, std::optional<std::function<bool(const SRecvData &)>> cb) {
+bool Client::write(const std::string &msg, std::optional<std::function<bool(const SRecvData &)>> cb) {
+	auto r = write("{}", msg);
+	if (cb)
+		r = (*cb)({.data = msg, .size = msg.size(), .good = r});
+
+	return r;
+}
+
+const std::string &Client::getIp() const { return m_ip; }
+
+template <typename... Args>
+bool Client::write(std::format_string<Args...> fmt, Args &&...args) {
 	if (!m_sockfd || !m_sockfd->isValid())
 		return false;
 
+	std::string msg = std::format(fmt, std::forward<Args>(args)...);
 	if (m_szReading) {
 		msg.insert(0, "\r");
 		msg.append(*m_szReading);
@@ -160,6 +162,3 @@ bool Client<T>::write(std::string msg, std::optional<std::function<bool(const SR
 	}
 	return true;
 }
-
-template <typename T>
-const std::string &Client<T>::getIp() const { return m_ip; }
