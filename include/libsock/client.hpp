@@ -28,6 +28,7 @@ enum eEventType : std::uint8_t {
 	WRITE
 };
 
+template <typename T>
 class Client {
   public:
 	~Client();
@@ -37,9 +38,7 @@ class Client {
 
 	UP<SRecvData> read(std::optional<std::function<bool(const SRecvData &)>> cb = std::nullopt);
 	UP<SRecvData> read(const std::string &msg, std::optional<std::function<bool(const SRecvData &)>> cb = std::nullopt);
-	bool		  write(const std::string &msg, std::optional<std::function<bool(const SRecvData &)>> cb = std::nullopt);
-	template <typename... Args>
-	bool write(std::format_string<Args...> fmt, Args &&...args);
+	bool		  write(std::string msg, std::optional<std::function<bool(const SRecvData &)>> cb = std::nullopt);
 
 	void resumeHistory();
 	void runLoop(bool resumeHistory = true, std::optional<std::function<bool(const SRecvData &)>> cb = std::nullopt);
@@ -48,11 +47,11 @@ class Client {
 
   private:
 	void init();
-	Client(SP<Abstract::IServer> server, SP<ClientManager> clients, bool track = false, bool wait = false);
+	Client(SP<Abstract::IServer<T>> server, SP<ClientManager<T>> clients, bool track = false, bool wait = false);
 
-	WP<Client>			  m_self;
-	WP<Abstract::IServer> m_wpServer;
-	WP<ClientManager>	  m_wpClientManager;
+	WP<Client>				 m_self;
+	WP<Abstract::IServer<T>> m_wpServer;
+	WP<ClientManager<T>>	 m_wpClientManager;
 
 	SP<LibSock::CFileDescriptor> m_sockfd;
 	sockaddr_in					 m_addr;
@@ -66,6 +65,6 @@ class Client {
 
 	void recvLoop(std::optional<std::function<bool(const SRecvData &)>> cb = std::nullopt);
 
-	friend class ClientManager;
+	friend class ClientManager<T>;
 };
 } // namespace LibSock
