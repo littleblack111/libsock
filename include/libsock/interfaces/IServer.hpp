@@ -15,7 +15,7 @@ class IServer : public std::enable_shared_from_this<IServer> {
 
   protected:
 	IServer(uint16_t port, bool reuseaddr = true, bool keepalive = false);
-	virtual void				 init(std::optional<sockaddr_in> addr = std::nullopt);
+	virtual void				 init(std::optional<sockaddr_in> addr = std::nullopt) = 0;
 	SP<LibSock::CFileDescriptor> m_sockfd;
 	sockaddr_in					 m_addr;
 	uint16_t					 m_port;
