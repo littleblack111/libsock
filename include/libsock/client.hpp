@@ -1,8 +1,8 @@
 #pragma once
 
-#include "../types.hpp"
-#include "clients.hpp"
-#include "server.hpp"
+#include "clientManager.hpp"
+#include "interfaces/IServer.hpp"
+#include "types.hpp"
 #include <format>
 #include <functional>
 #include <netinet/in.h>
@@ -11,7 +11,6 @@
 #include <sys/socket.h>
 
 namespace LibSock {
-namespace Server {
 
 struct SRecvData {
 	std::string	 data;
@@ -49,11 +48,11 @@ class Client {
 
   private:
 	void init();
-	Client(SP<Server> server, SP<Clients> clients, bool track = false, bool wait = false);
+	Client(SP<Abstract::IServer> server, SP<ClientManager> clients, bool track = false, bool wait = false);
 
-	WP<Client>	m_self;
-	WP<Server>	m_wpServer;
-	WP<Clients> m_wpClients;
+	WP<Client>			  m_self;
+	WP<Abstract::IServer> m_wpServer;
+	WP<ClientManager>	  m_wpClientManager;
 
 	SP<LibSock::CFileDescriptor> m_sockfd;
 	sockaddr_in					 m_addr;
@@ -67,8 +66,6 @@ class Client {
 
 	void recvLoop(std::optional<std::function<bool(const SRecvData &)>> cb = std::nullopt);
 
-	friend class Clients;
+	friend class ClientManager;
 };
-
-} // namespace Server
 } // namespace LibSock

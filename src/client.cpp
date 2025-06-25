@@ -1,6 +1,6 @@
-#include "libsock/server/client.hpp"
-#include "libsock/server/clients.hpp"
-#include "libsock/server/server.hpp"
+#include "libsock/client.hpp"
+#include "libsock/clientManager.hpp"
+#include "libsock/interfaces/IServer.hpp"
 #include "libsock/types.hpp"
 #include "misc/FileDescriptor.hpp"
 #include <algorithm>
@@ -11,15 +11,15 @@
 #include <optional>
 #include <sys/socket.h>
 
-using namespace LibSock::Server;
+using namespace LibSock;
 
-Client::Client(SP<Server> server, SP<Clients> clients, bool track, bool wait)
+Client::Client(SP<Abstract::IServer> server, SP<ClientManager> clients, bool track, bool wait)
 	: m_track(track)
 	, m_wait(wait) {
-	m_wpServer	= std::move(server);
-	m_wpClients = std::move(clients);
+	m_wpServer		  = std::move(server);
+	m_wpClientManager = std::move(clients);
 
-	if (m_wpClients.expired())
+	if (m_wpClientManager.expired())
 		throw std::runtime_error("server:client: ClientManager doesn't exist");
 	if (m_wpServer.expired())
 		throw std::runtime_error("server:client: Server doesn't exist");
@@ -98,7 +98,7 @@ UP<SRecvData> Client::read(std::optional<std::function<bool(const SRecvData &)>>
 	}
 
 	if (m_track)
-		m_wpClients.lock()->m_vDatas.emplace_back(SData{recvData->data, m_self});
+		m_wpClientManager.lock()->m_vDatas.emplace_back(SData{recvData->data, m_self});
 
 	return recvData;
 }
@@ -115,11 +115,11 @@ void Client::runLoop(bool resumeHist, std::optional<std::function<bool(const SRe
 
 	recvLoop(cb);
 
-	m_wpClients.lock()->kick(m_self);
+	m_wpClientManager.lock()->kick(m_self);
 }
 
 void Client::resumeHistory() {
-	for (const auto &chat : m_wpClients.lock()->getDatas())
+	for (const auto &chat : m_wpClientManager.lock()->getDatas())
 		write(chat.msg);
 }
 

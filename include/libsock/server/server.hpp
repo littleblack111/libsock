@@ -1,32 +1,8 @@
-#pragma once
+#include "../interfaces/IServer.hpp"
 
-#include "../types.hpp"
-#include <memory>
-#include <mutex>
-#include <netinet/in.h>
-#include <vector>
-
-namespace LibSock {
-namespace Server {
-
-class Server : public std::enable_shared_from_this<Server> {
-  public:
-	static SP<Server> create(uint16_t port, bool reuseaddr = true, bool keepalive = false);
-	~Server();
-	SP<LibSock::CFileDescriptor> getSocket() const;
-
+namespace LibSock::Server {
+class Server : public Abstract::IServer {
   private:
-	Server(uint16_t port, bool reuseaddr = true, bool keepalive = false);
-	SP<LibSock::CFileDescriptor> m_sockfd;
-	sockaddr_in					 m_addr;
-	uint16_t					 m_port;
-
-	WP<Server> get();
-
-	WP<Server> m_self;
-
-	mutable std::mutex m_mutex;
+	void init(std::optional<sockaddr_in> addr = std::nullopt) override;
 };
-inline std::vector<SP<Server>> vpServer;
-} // namespace Server
-} // namespace LibSock
+} // namespace LibSock::Server
