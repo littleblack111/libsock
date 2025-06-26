@@ -1,22 +1,17 @@
 cmake_minimum_required(VERSION 4.0.3)
-
 project(
   sock
   VERSION 1.0.0
-  DESCRIPTION "Minimal C++ socket library")
+  DESCRIPTION "Minimal C++ socket library"
+  LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 26)
+# set(CMAKE_CXX_EXTENSIONS      OFF)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_SCAN_FOR_MODULES ON)
 
 add_compile_definitions(LIBSOCK_VERSION="${PROJECT_VERSION}")
 
-include(CTest)
-include(GNUInstallDirs)
-
-set(PREFIX ${CMAKE_INSTALL_PREFIX})
-set(INCLUDE ${CMAKE_INSTALL_FULL_INCLUDEDIR})
-set(LIBDIR ${CMAKE_INSTALL_FULL_LIBDIR})
-
-configure_file(libsock.pc.in libsock.pc @ONLY)
-
-set(CMAKE_CXX_STANDARD 26)
 add_compile_options(
   -Wall
   -Wextra
@@ -26,49 +21,51 @@ add_compile_options(
   -Wno-missing-field-initializers
   -Wno-narrowing
   -Wno-pointer-arith)
-set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
-if(CMAKE_BUILD_TYPE MATCHES Debug OR CMAKE_BUILD_TYPE MATCHES DEBUG)
+if(CMAKE_BUILD_TYPE MATCHES Debug)
   message(STATUS "Configuring libsock in Debug")
   add_compile_definitions(LIBSOCK_DEBUG)
 else()
-  add_compile_options(-O3)
   message(STATUS "Configuring libsock in Release")
+  add_compile_options(-O3)
 endif()
 
-file(GLOB_RECURSE PRIVATE_SOURCES CONFIGURE_DEPENDS "src/*.cpp")
-file(GLOB_RECURSE PRIVATE_HEADERS CONFIGURE_DEPENDS "src/*.hpp")
-file(GLOB_RECURSE PUBLIC_HEADERS CONFIGURE_DEPENDS "include/*.hpp")
+include(CTest)
+include(GNUInstallDirs)
+configure_file(libsock.pc.in libsock.pc @ONLY)
 
-set(ALL_SOURCES ${PRIVATE_SOURCES} ${PUBLIC_HEADERS})
+file(GLOB_RECURSE MODULE_IFACE CONFIGURE_DEPENDS
+     "${CMAKE_CURRENT_SOURCE_DIR}/modules/*.cppm"
+     "${CMAKE_CURRENT_SOURCE_DIR}/modules/*.ixx")
+file(GLOB_RECURSE MODULE_IMPL CONFIGURE_DEPENDS
+     "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
 
-find_package(PkgConfig REQUIRED)
-
-add_library(sock SHARED ${ALL_SOURCES})
-target_include_directories(
+add_library(sock SHARED)
+target_sources(
   sock
-  PUBLIC "./include"
-  PRIVATE "./src"
-  PRIVATE "./src/misc")
-set_target_properties(sock PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION 1)
+  PUBLIC FILE_SET
+         cxx_modules
+         TYPE
+         CXX_MODULES
+         BASE_DIRS
+         "${CMAKE_CURRENT_SOURCE_DIR}/modules"
+         FILES
+         ${MODULE_IFACE}
+  PRIVATE ${MODULE_IMPL})
+target_include_directories(sock PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/modules")
 
-# tests add_custom_target(tests)
-#
-# add_executable(libsock_socket "tests/socket.cpp")
-# target_link_libraries(libsock_socket PRIVATE libsock) add_test( NAME "Socket"
-# WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/tests COMMAND libsock_socket "socket")
-# add_dependencies(tests libsock_socket)
-#
-# add_executable(libsock_connection "tests/connection.cpp")
-# target_link_libraries(libsock_connection PRIVATE libsock) add_test( NAME
-# "Connection" WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/tests COMMAND
-# libsock_connection "connection") add_dependencies(tests libsock_connection)
-#
-# Installation
-install(TARGETS sock)
+set_target_properties(
+  sock
+  PROPERTIES CXX_SCAN_FOR_MODULES ON
+             VERSION ${PROJECT_VERSION}
+             SOVERSION 1)
+
+install(TARGETS sock DESTINATION ${CMAKE_INSTALL_LIBDIR})
 install(
-  DIRECTORY "include/libsock"
-  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-  PATTERN "src/misc" EXCLUDE)
+  DIRECTORY modules/
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/modules
+  FILES_MATCHING
+  PATTERN "*.cppm"
+  PATTERN "*.ixx")
 install(FILES ${CMAKE_BINARY_DIR}/libsock.pc
         DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
