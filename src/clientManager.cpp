@@ -1,10 +1,6 @@
-#include "libsock/clientManager.hpp"
-#include "libsock/client.hpp"
-#include <algorithm>
-#include <functional>
-#include <ranges>
-#include <unistd.h>
-#include <utility>
+import libsock.clientManager;
+import libsock.client;
+import std;
 
 using namespace LibSock;
 

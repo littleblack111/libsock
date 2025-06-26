@@ -1,5 +1,6 @@
-#include "libsock/client/server.hpp"
-#include "FileDescriptor.hpp"
+import libsock.server;
+import libsock.fileDescriptor;
+import std;
 
 using namespace LibSock::Client;
 
