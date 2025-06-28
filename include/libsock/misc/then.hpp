@@ -1,13 +1,8 @@
-export module libsock.misc;
+#include <future>
+#include <type_traits>
+#include <utility>
 
-import std;
-
-export {
-#define UNLIKELY(expr) (expr) [[unlikely]]
-#define LIKELY(expr)   (expr) [[likely]]
-}
-
-export namespace LibSock {
+namespace LibSock {
 template <typename T, typename Func>
 auto then(std::future<T> fut, Func func) -> std::future<std::invoke_result_t<Func, T>> {
 	return std::async(std::launch::async, [fut = std::move(fut), func = std::move(func)]() mutable {

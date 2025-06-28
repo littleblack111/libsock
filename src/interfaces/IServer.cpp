@@ -1,7 +1,10 @@
-import libsock.interfaces;
-import libsock.types;
-import libsock.fileDescriptor;
-import std;
+#include "libsock/interfaces/IServer.hpp"
+#include "libsock/types.hpp"
+#include "misc/FileDescriptor.hpp"
+#include <cstring>
+#include <mutex>
+#include <stdexcept>
+#include <sys/socket.h>
 
 using namespace LibSock::Abstract;
 

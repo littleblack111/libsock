@@ -1,10 +1,16 @@
-export module libsock.clientManager;
+#pragma once
 
-import libsock.interfaces;
-import libsock.types;
-import std;
+#include "interfaces/IServer.hpp"
+#include "types.hpp"
+#include <functional>
+#include <future>
+#include <memory>
+#include <optional>
+#include <string>
+#include <thread>
+#include <vector>
 
-export namespace LibSock {
+namespace LibSock {
 
 class Client;
 
@@ -33,7 +39,7 @@ class ClientManager : public std::enable_shared_from_this<ClientManager> {
 
   private:
 	std::vector<std::pair<std::jthread, SP<Client>>> m_vClientManager;
-	std::vector<SData>							 m_vDatas;
+	std::vector<SData>								 m_vDatas;
 
 	WP<ClientManager> get();
 

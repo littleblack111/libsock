@@ -1,9 +1,12 @@
-export module libsock.interfaces;
+#pragma once
 
-import libsock.types;
-import std;
+#include "../types.hpp"
+#include <memory>
+#include <mutex>
+#include <netinet/in.h>
+#include <optional>
 
-export namespace LibSock::Abstract {
+namespace LibSock::Abstract {
 class IServer : public std::enable_shared_from_this<IServer> {
   public:
 	static SP<IServer> make(uint16_t port, bool reuseaddr = true, bool keepalive = false);

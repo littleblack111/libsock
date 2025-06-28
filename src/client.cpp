@@ -1,9 +1,15 @@
-import libsock.client;
-import libsock.clientManager;
-import libsock.interfaces;
-import libsock.types;
-import libsock.fileDescriptor;
-import std;
+#include "libsock/client.hpp"
+#include "libsock/clientManager.hpp"
+#include "libsock/interfaces/IServer.hpp"
+#include "libsock/types.hpp"
+#include "misc/FileDescriptor.hpp"
+#include <algorithm>
+#include <arpa/inet.h>
+#include <cstring>
+#include <format>
+#include <memory>
+#include <optional>
+#include <sys/socket.h>
 
 using namespace LibSock;
 

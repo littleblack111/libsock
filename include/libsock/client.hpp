@@ -1,11 +1,16 @@
-export module libsock.client;
+#pragma once
 
-import libsock.clientManager;
-import libsock.interfaces;
-import libsock.types;
-import std;
+#include "clientManager.hpp"
+#include "interfaces/IServer.hpp"
+#include "types.hpp"
+#include <format>
+#include <functional>
+#include <netinet/in.h>
+#include <optional>
+#include <string>
+#include <sys/socket.h>
 
-export namespace LibSock {
+namespace LibSock {
 
 struct SRecvData {
 	std::string	 data;
@@ -15,7 +20,7 @@ struct SRecvData {
 	bool isEmpty() const;
 	void sanitize();
 
-	static constexpr char asciiEscape = 0x1B; // \u001b
+	static constexpr char asciiEscape = 0x1B; // 
 };
 
 enum eEventType : std::uint8_t {
@@ -45,9 +50,9 @@ class Client {
 	void init();
 	Client(SP<Abstract::IServer> server, SP<ClientManager> clients, bool track = false, bool wait = false);
 
-	WP<Client> 			  m_self;
+	WP<Client>			  m_self;
 	WP<Abstract::IServer> m_wpServer;
-	WP<ClientManager> 	  m_wpClientManager;
+	WP<ClientManager>	  m_wpClientManager;
 
 	SP<LibSock::CFileDescriptor> m_sockfd;
 	sockaddr_in					 m_addr;
@@ -64,4 +69,3 @@ class Client {
 	friend class ClientManager;
 };
 } // namespace LibSock
-

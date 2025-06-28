@@ -1,6 +1,10 @@
-import libsock.fileDescriptor;
-import libsock.misc;
-import std;
+#include "FileDescriptor.hpp"
+#include <cassert>
+#include <cstdlib>
+#include <fcntl.h>
+#include <sys/poll.h>
+#include <unistd.h>
+#include <utility>
 
 using namespace LibSock;
 

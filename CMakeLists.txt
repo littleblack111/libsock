@@ -35,7 +35,8 @@ include(GNUInstallDirs)
 configure_file(libsock.pc.in libsock.pc @ONLY)
 
 file(GLOB_RECURSE MODULE_IFACE CONFIGURE_DEPENDS
-     "${CMAKE_CURRENT_SOURCE_DIR}/modules/*.cppm")
+     "${CMAKE_CURRENT_SOURCE_DIR}/modules/*.cppm"
+     "${CMAKE_CURRENT_SOURCE_DIR}/modules/*.ixx")
 file(GLOB_RECURSE MODULE_IMPL CONFIGURE_DEPENDS
      "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
 
