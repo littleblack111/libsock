@@ -9,9 +9,6 @@
 
 using namespace LibSock::Server;
 
-namespace LibSock {
-namespace Server {
-
 Server::Server(uint16_t port, bool reuseaddr, bool keepalive)
 	: m_sockfd(std::make_shared<LibSock::CFileDescriptor>(socket(AF_INET, SOCK_STREAM, 0)))
 	, m_port(port) {
@@ -57,6 +54,3 @@ Server::~Server() {
 SP<LibSock::CFileDescriptor> Server::getSocket() const {
 	return m_sockfd;
 }
-
-} // namespace Server
-} // namespace LibSock

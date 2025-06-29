@@ -6,8 +6,7 @@
 #include <netinet/in.h>
 #include <vector>
 
-namespace LibSock {
-namespace Server {
+namespace LibSock::Server {
 
 class Server : public std::enable_shared_from_this<Server> {
   public:
@@ -28,5 +27,4 @@ class Server : public std::enable_shared_from_this<Server> {
 	mutable std::mutex m_mutex;
 };
 inline std::vector<SP<Server>> vpServer;
-} // namespace Server
-} // namespace LibSock
+} // namespace LibSock::Server

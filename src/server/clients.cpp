@@ -8,9 +8,6 @@
 
 using namespace LibSock::Server;
 
-namespace LibSock {
-namespace Server {
-
 void Clients::shutdownClients(std::optional<std::function<bool(const std::vector<std::pair<std::jthread, SP<Client>>> &)>> cb) {
 	if (m_vClients.empty())
 		return;
@@ -119,6 +116,3 @@ void Clients::kick(WP<Client> clientWeak, const bool kill, std::optional<std::fu
 		}
 	}
 }
-
-} // namespace Server
-} // namespace LibSock
