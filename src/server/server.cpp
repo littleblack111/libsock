@@ -32,7 +32,7 @@ Server::Server(uint16_t port, bool reuseaddr, bool keepalive)
 		throw std::runtime_error("server:server Failed to bind or listen on socket");
 }
 
-SP<Server> Server::create(uint16_t port, bool reuseaddr, bool keepalive) {
+SP<Server> Server::make(uint16_t port, bool reuseaddr, bool keepalive) {
 	auto c = SP<Server>(new Server(port, reuseaddr, keepalive));
 	vpServer.emplace_back(c);
 	c->m_self = c;

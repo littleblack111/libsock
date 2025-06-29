@@ -33,7 +33,7 @@ Clients::Clients() {
 		void(); // failed to register exit handler...
 }
 
-SP<Clients> Clients::create(WP<Server> server) {
+SP<Clients> Clients::make(WP<Server> server) {
 	auto c = SP<Clients>(new Clients());
 	vpClients.emplace_back(c);
 	c->m_self	  = c;
@@ -52,7 +52,7 @@ Clients::~Clients() {
 	vpClients.erase(std::remove_if(vpClients.begin(), vpClients.end(), [this](const WP<Clients> &wptr) { return !wptr.owner_before(m_self) && !m_self.owner_before(wptr); }), vpClients.end());
 }
 
-std::pair<SP<Client>, std::future<void>> Clients::newClient(bool track, bool wait, std::function<void(SP<Client> &)> cb) {
+std::pair<SP<Client>, std::future<void>> Clients::createClient(bool track, bool wait, std::function<void(SP<Client> &)> cb) {
 	auto promise = std::make_shared<std::promise<void>>();
 	SP	 client	 = SP<Client>(new Client(m_wpServer.lock(), shared_from_this(), track, wait));
 	m_vClients.emplace_back(std::jthread([client, cb, promise]() mutable {

@@ -21,15 +21,14 @@ struct SData {
 
 class Clients : public std::enable_shared_from_this<Clients> {
   public:
-	static SP<Clients> create(WP<Server> server);
+	static SP<Clients> make(WP<Server> server);
 	~Clients();
 
-	std::pair<SP<Client>, std::future<void>> newClient(bool track = true, bool wait = false, std::function<void(SP<Client> &)> cb = [](SP<Client>) {});
+	std::pair<SP<Client>, std::future<void>> createClient(bool track = true, bool wait = false, std::function<void(SP<Client> &)> cb = [](SP<Client>) {});
 
 	void broadcast(const SData &msg); // second param only specified when we
 									  // want to exclude the sender
 	void kick(WP<Client> client, const bool kill = false, std::optional<std::function<bool(const std::vector<std::pair<std::jthread, SP<Client>>>::iterator &)>> cb = std::nullopt);
-	void addClient(const Client &client);
 
 	void shutdownClients(std::optional<std::function<bool(const std::vector<std::pair<std::jthread, SP<Client>>> &)>> cb = std::nullopt);
 

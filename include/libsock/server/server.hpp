@@ -10,7 +10,7 @@ namespace LibSock::Server {
 
 class Server : public std::enable_shared_from_this<Server> {
   public:
-	static SP<Server> create(uint16_t port, bool reuseaddr = true, bool keepalive = false);
+	static SP<Server> make(uint16_t port, bool reuseaddr = true, bool keepalive = false);
 	~Server();
 	SP<LibSock::CFileDescriptor> getSocket() const;
 
