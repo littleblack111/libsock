@@ -2,7 +2,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace LibSock {
+namespace sock {
 template <typename T, typename Func>
 auto then(std::future<T> fut, Func func) -> std::future<std::invoke_result_t<Func, T>> {
 	return std::async(std::launch::async, [fut = std::move(fut), func = std::move(func)]() mutable {
@@ -37,4 +37,4 @@ template <typename Func>
 auto operator|(std::future<void> &fut, Then<Func> thenObj) -> std::future<std::invoke_result_t<Func>> {
 	return then(std::move(fut), std::move(thenObj.func));
 }
-} // namespace LibSock
+} // namespace sock

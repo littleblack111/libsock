@@ -11,7 +11,7 @@
 #include <optional>
 #include <sys/socket.h>
 
-using namespace LibSock::Client;
+using namespace sock::Client;
 #define m_addr	 *m_wpServer.lock()->getAddr()
 #define m_sockfd m_wpServer.lock()->getSocket()
 

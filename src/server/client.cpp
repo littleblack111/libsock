@@ -11,7 +11,7 @@
 #include <optional>
 #include <sys/socket.h>
 
-using namespace LibSock::Server;
+using namespace sock::Server;
 
 Client::Client(SP<Server> server, SP<Clients> clients, bool track, bool wait)
 	: m_track(track)
@@ -26,8 +26,8 @@ Client::Client(SP<Server> server, SP<Clients> clients, bool track, bool wait)
 }
 
 void Client::init() {
-	m_sockfd = std::make_shared<LibSock::CFileDescriptor>(accept(m_wpServer.lock()->getSocket()->get(), reinterpret_cast<sockaddr *>(&m_addr), &m_addrLen)); // if this is in the init list, it will run before
-																																							 // m_addrLen, so it won't work :/
+	m_sockfd = std::make_shared<CFileDescriptor>(accept(m_wpServer.lock()->getSocket()->get(), reinterpret_cast<sockaddr *>(&m_addr), &m_addrLen)); // if this is in the init list, it will run before
+																																					// m_addrLen, so it won't work :/
 
 	if (!m_sockfd->isValid())
 		throw std::runtime_error("server:client: Failed to create socket");

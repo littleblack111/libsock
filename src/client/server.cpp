@@ -9,10 +9,10 @@
 #include <string>
 #include <sys/socket.h>
 
-using namespace LibSock::Client;
+using namespace sock::Client;
 
 Server::Server(std::string ip, uint16_t port, bool reuseaddr, bool keepalive)
-	: m_sockfd(std::make_shared<LibSock::CFileDescriptor>(socket(AF_INET, SOCK_STREAM, 0)))
+	: m_sockfd(std::make_shared<CFileDescriptor>(socket(AF_INET, SOCK_STREAM, 0)))
 	, m_port(port) {
 	std::lock_guard<std::mutex> lk(m_mutex);
 	if (!m_sockfd->isValid() || m_sockfd->get() < 0)
@@ -52,7 +52,7 @@ Server::~Server() {
 	vpServer.erase(std::remove_if(vpServer.begin(), vpServer.end(), [this](const SP<Server> &sptr) { return sptr.get() == this; }), vpServer.end());
 }
 
-SP<LibSock::CFileDescriptor> Server::getSocket() const {
+SP<sock::CFileDescriptor> Server::getSocket() const {
 	return m_sockfd;
 }
 

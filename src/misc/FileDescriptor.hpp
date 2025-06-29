@@ -2,7 +2,7 @@
 
 #include <fcntl.h>
 
-namespace LibSock {
+namespace sock {
 
 class CFileDescriptor {
   public:
@@ -37,4 +37,4 @@ class CFileDescriptor {
 	int m_fd = -1;
 };
 
-} // namespace LibSock
+} // namespace sock

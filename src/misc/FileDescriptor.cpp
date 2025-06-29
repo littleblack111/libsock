@@ -6,7 +6,7 @@
 #include <unistd.h>
 #include <utility>
 
-using namespace LibSock;
+using namespace sock;
 
 CFileDescriptor::CFileDescriptor(int const fd)
 	: m_fd(fd) {}

@@ -10,7 +10,7 @@
 #include <string>
 #include <sys/socket.h>
 
-namespace LibSock::Server {
+namespace sock::Server {
 
 struct SRecvData {
 	std::string	 data;
@@ -54,13 +54,13 @@ class Client {
 	WP<Server>	m_wpServer;
 	WP<Clients> m_wpClients;
 
-	SP<LibSock::CFileDescriptor> m_sockfd;
-	sockaddr_in					 m_addr;
-	socklen_t					 m_addrLen = sizeof(m_addr);
-	std::string					 m_ip;
-	int							 m_port;
-	bool						 m_track;
-	bool						 m_wait;
+	SP<CFileDescriptor> m_sockfd;
+	sockaddr_in			m_addr;
+	socklen_t			m_addrLen = sizeof(m_addr);
+	std::string			m_ip;
+	int					m_port;
+	bool				m_track;
+	bool				m_wait;
 
 	std::optional<std::string> m_szReading = std::nullopt;
 
@@ -69,4 +69,4 @@ class Client {
 	friend class Clients;
 };
 
-} // namespace LibSock::Server
+} // namespace sock::Server

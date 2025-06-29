@@ -11,6 +11,6 @@ using WP = std::weak_ptr<T>;
 template <typename T>
 using UP = std::unique_ptr<T>;
 
-namespace LibSock {
+namespace sock {
 class CFileDescriptor;
 }

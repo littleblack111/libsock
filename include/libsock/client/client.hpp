@@ -10,7 +10,7 @@
 #include <string>
 #include <sys/socket.h>
 
-namespace LibSock::Client {
+namespace sock::Client {
 
 struct SRecvData {
 	std::string	 data;
@@ -66,4 +66,4 @@ class Client {
 	friend class Clients;
 };
 
-} // namespace LibSock::Client
+} // namespace sock::Client

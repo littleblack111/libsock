@@ -10,7 +10,7 @@
 #include <thread>
 #include <vector>
 
-namespace LibSock::Client {
+namespace sock::Client {
 
 class Client;
 
@@ -50,4 +50,4 @@ class Clients : public std::enable_shared_from_this<Clients> {
 	friend class Client;
 };
 inline std::vector<WP<Clients>> vpClients;
-} // namespace LibSock::Client
+} // namespace sock::Client

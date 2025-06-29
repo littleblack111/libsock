@@ -6,7 +6,7 @@
 #include <unistd.h>
 #include <utility>
 
-using namespace LibSock::Server;
+using namespace sock::Server;
 
 void Clients::shutdownClients(std::optional<std::function<bool(const std::vector<std::pair<std::jthread, SP<Client>>> &)>> cb) {
 	if (m_vClients.empty())
